@@ -1,0 +1,3496 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>健康電子日帳｜日系繪本風</title>
+  <!-- 手機加入主畫面全螢幕（Standalone App）設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="健康日帳" />
+  <meta name="theme-color" content="#FFFCF6" />
+  <!-- Google Fonts「Huninn」 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* =========================================================================
+       日系繪本風設計變數（嚴格平塗無漸層、和紙白底、3px 墨灰粗線框）
+       ========================================================================= */
+    :root {
+      --bg-paper: #FFFCF6;     /* 和紙白 */
+      --bg-cream: #FFF7EA;     /* 淺米白輔助底色 */
+      --ink: #3E3A39;          /* 墨灰 */
+      --coral: #F2A497;        /* 珊瑚粉：用藥、警示、支出、上漲提醒 */
+      --yellow: #F6D27A;       /* 山吹黃：飲食、信用卡、太陽、鼓勵 */
+      --blue: #A8D3E6;         /* 水色：飲水、電子支付、睡眠、作息 */
+      --green: #B9DAA5;        /* 若竹綠：運動、綠拿鐵、達標、下降好消息 */
+      --border-w: 3px;
+      --radius-card: 22px;
+      --radius-btn: 18px;
+      --radius-pill: 999px;
+      --shadow-hard: 4px 4px 0 #3E3A39;
+      --shadow-hard-sm: 3px 3px 0 #3E3A39;
+      --shadow-hard-xs: 2px 2px 0 #3E3A39;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Huninn', sans-serif;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 桌面版和紙點點背景（平塗點點） */
+    body {
+      background-image: radial-gradient(#3E3A39 0.75px, transparent 0.75px);
+      background-size: 24px 24px;
+      background-color: var(--bg-paper);
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      margin: 0 auto;
+      background-color: var(--bg-paper);
+      position: relative;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+    }
+
+    @media (min-width: 500px) {
+      .app-shell {
+        border-left: var(--border-w) solid var(--ink);
+        border-right: var(--border-w) solid var(--ink);
+      }
+    }
+
+    /* 繪本風通用卡片與按鈕 */
+    .ehon-card {
+      background-color: var(--bg-paper);
+      border: var(--border-w) solid var(--ink);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-hard);
+    }
+
+    .ehon-subcard {
+      background-color: var(--bg-cream);
+      border: var(--border-w) solid var(--ink);
+      border-radius: var(--radius-btn);
+      box-shadow: var(--shadow-hard-xs);
+    }
+
+    .ehon-btn {
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      border: var(--border-w) solid var(--ink);
+      border-radius: var(--radius-btn);
+      box-shadow: var(--shadow-hard-sm);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .ehon-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 0 0 0 var(--ink);
+    }
+
+    .ehon-pill {
+      border: var(--border-w) solid var(--ink);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-hard-xs);
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .ehon-pill:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0 0 0 var(--ink);
+    }
+
+    .ehon-input, .ehon-select {
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      border: var(--border-w) solid var(--ink);
+      border-radius: 16px;
+      padding: 8px 12px;
+      width: 100%;
+      font-size: 14px;
+      outline: none;
+      box-shadow: var(--shadow-hard-xs);
+    }
+
+    .ehon-input:focus, .ehon-select:focus {
+      background-color: var(--bg-cream);
+      box-shadow: var(--shadow-hard-sm);
+    }
+
+    /* 標籤選中色 */
+    .bg-coral { background-color: var(--coral) !important; }
+    .bg-yellow { background-color: var(--yellow) !important; }
+    .bg-blue { background-color: var(--blue) !important; }
+    .bg-green { background-color: var(--green) !important; }
+    .bg-cream { background-color: var(--bg-cream) !important; }
+    .bg-paper { background-color: var(--bg-paper) !important; }
+
+    /* =========================================================================
+       繪本風柔和動畫與日期彈跳效果
+       ========================================================================= */
+    @keyframes gentleFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-4px) rotate(2deg); }
+    }
+
+    @keyframes gentleSway {
+      0%, 100% { transform: rotate(-3.5deg); }
+      50% { transform: rotate(3.5deg); }
+    }
+
+    @keyframes gentleBreathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.045); }
+    }
+
+    @keyframes dateBouncePop {
+      0% { transform: scale(0.95) translateY(8px); opacity: 0.75; }
+      55% { transform: scale(1.015) translateY(-4px); opacity: 1; }
+      82% { transform: scale(0.995) translateY(1px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    @keyframes checkPop {
+      0% { transform: scale(0.8); }
+      55% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes moodSelectPop {
+      0% { transform: scale(0.9); }
+      55% { transform: scale(1.12) rotate(-3deg); }
+      100% { transform: scale(1.05) rotate(0deg); }
+    }
+
+    .anim-float { animation: gentleFloat 3.4s ease-in-out infinite; }
+    .anim-sway { animation: gentleSway 3.6s ease-in-out infinite; transform-origin: center; }
+    .anim-breathe { animation: gentleBreathe 3.2s ease-in-out infinite; transform-origin: center; }
+    .anim-date-bounce { animation: dateBouncePop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .anim-check-pop { animation: checkPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .mood-selected {
+      background-color: var(--coral) !important;
+      transform: scale(1.05);
+      animation: moodSelectPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 減少動態效果：支援系統與手動切換 */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+      .mood-selected { transform: none; }
+    }
+
+    body.reduce-motion *,
+    body.reduce-motion *::before,
+    body.reduce-motion *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    body.reduce-motion .mood-selected {
+      transform: none !important;
+    }
+
+    /* 勾選框 */
+    .ehon-checkbox {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      border: var(--border-w) solid var(--ink);
+      border-radius: 10px;
+      background-color: var(--bg-paper);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-hard-xs);
+    }
+
+    .ehon-checkbox.checked {
+      background-color: var(--green);
+    }
+
+    .task-done-title {
+      text-decoration: line-through;
+      text-decoration-thickness: 2.5px;
+      opacity: 0.65;
+    }
+
+    /* 底部 5 分頁固定導覽列 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background-color: var(--bg-paper);
+      border-top: var(--border-w) solid var(--ink);
+      padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+      z-index: 40;
+    }
+
+    @media (min-width: 500px) {
+      .bottom-nav {
+        border-left: var(--border-w) solid var(--ink);
+        border-right: var(--border-w) solid var(--ink);
+      }
+    }
+
+    .nav-tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 2px;
+      border-radius: 16px;
+      border: 2.5px solid transparent;
+      background-color: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      gap: 2px;
+      font-size: 11px;
+      line-height: 1.15;
+    }
+
+    .nav-tab.active {
+      border-color: var(--ink);
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+
+    .nav-tab.active[data-tab="schedule"] { background-color: var(--blue); }
+    .nav-tab.active[data-tab="body"] { background-color: var(--green); }
+    .nav-tab.active[data-tab="photos"] { background-color: var(--coral); }
+    .nav-tab.active[data-tab="money"] { background-color: var(--yellow); }
+    .nav-tab.active[data-tab="overview"] { background-color: var(--bg-cream); }
+
+    /* 儲存提示小氣泡 */
+    .save-toast {
+      position: fixed;
+      right: 14px;
+      bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+      z-index: 55;
+      background-color: var(--green);
+      color: var(--ink);
+      border: var(--border-w) solid var(--ink);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      box-shadow: var(--shadow-hard-sm);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    @media (min-width: 500px) {
+      .save-toast { right: calc(50% - 226px); }
+    }
+
+    .save-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 彈窗遮罩 */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(62, 58, 57, 0.5);
+      z-index: 70;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .date-picker-hidden {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+
+    /* 拍立得相框 */
+    .polaroid-card {
+      background-color: var(--bg-paper);
+      border: var(--border-w) solid var(--ink);
+      border-radius: 20px;
+      padding: 8px 8px 12px 8px;
+      box-shadow: var(--shadow-hard-sm);
+    }
+
+    .polaroid-img-wrap {
+      border: 2.5px solid var(--ink);
+      border-radius: 14px;
+      overflow: hidden;
+      background-color: var(--bg-cream);
+      position: relative;
+      aspect-ratio: 4 / 3;
+    }
+
+    .polaroid-img-wrap.portrait {
+      aspect-ratio: 3 / 4;
+    }
+
+    /* 隱藏捲軸但可橫滑 */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- =======================================================================
+         頂部常駐列：標題、微笑太陽雲朵、避雷小抄、減少動態、日期切換卡
+         ======================================================================= -->
+    <header class="px-3.5 pt-3.5 pb-2.5">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-2">
+          <div id="mascotContainer" class="w-12 h-12 flex items-center justify-center shrink-0"></div>
+          <div>
+            <h1 class="text-xl leading-tight tracking-wide">健康電子日帳</h1>
+            <p class="text-[11px] opacity-80">溫柔紀錄每日作息・體態・影像・帳本</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="btnOpenRules" type="button" class="ehon-pill px-2.5 py-1.5 text-xs bg-coral" aria-label="開啟絕對避雷小抄">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3L21 19H3L12 3Z" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.6" stroke-linejoin="round"/>
+              <path d="M12 9.5V13.5" stroke="#3E3A39" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="12" cy="16.5" r="1.3" fill="#3E3A39"/>
+            </svg>
+            <span>避雷小抄</span>
+          </button>
+
+          <button id="btnReduceMotion" type="button" class="ehon-pill px-2.5 py-1.5 text-xs" aria-pressed="false" title="切換減少動態效果">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="8.5" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2.5"/>
+              <path d="M9.5 9V15M14.5 9V15" stroke="#3E3A39" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <span id="reduceMotionLabel">減少動態</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 日期切換卡 -->
+      <div class="ehon-card p-3 bg-yellow">
+        <div class="flex items-center justify-between gap-2">
+          <button id="btnPrevDay" type="button" class="ehon-btn w-10 h-10 shrink-0" aria-label="前一天">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M15 6L9 12L15 18" stroke="#3E3A39" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="flex-1 text-center min-w-0">
+            <div class="flex items-center justify-center gap-1.5">
+              <button id="btnPickDate" type="button" class="text-lg tracking-wide underline decoration-2 underline-offset-4 cursor-pointer bg-transparent border-0 text-[#3E3A39]" title="點擊選擇日期">
+                <span id="dateDisplayText">2026/11/25（三）</span>
+              </button>
+              <input id="nativeDatePicker" type="date" class="date-picker-hidden" aria-label="選擇日期" />
+            </div>
+
+            <div class="flex items-center justify-center gap-1.5 mt-1.5 flex-wrap">
+              <button id="btnToggleScheduleType" type="button" class="ehon-pill px-2.5 py-0.5 text-xs bg-paper" title="點擊切換平日／週六／週日課表">
+                <span id="scheduleTypeBadge">平日早鳥版 ↻</span>
+              </button>
+              <button id="btnGoToday" type="button" class="ehon-pill px-2.5 py-0.5 text-xs bg-blue">
+                回今天
+              </button>
+            </div>
+          </div>
+
+          <button id="btnNextDay" type="button" class="ehon-btn w-10 h-10 shrink-0" aria-label="後一天">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M9 6L15 12L9 18" stroke="#3E3A39" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- =======================================================================
+         主內容區（切換日期時觸發彈跳動畫）
+         ======================================================================= -->
+    <main id="journalMain" class="px-3.5 space-y-4">
+
+      <!-- =====================================================================
+           分頁一：今日作息 (tab-schedule)
+           ===================================================================== -->
+      <section id="tab-schedule" class="tab-panel space-y-3.5">
+        <!-- 1. 白開水追蹤卡（支援點擊標題收合，預設展開） -->
+        <div class="ehon-card p-3.5 bg-blue">
+          <button type="button" data-toggle-section="water" class="w-full flex items-center justify-between gap-2 text-left bg-transparent border-0 p-0 cursor-pointer text-[#3E3A39]">
+            <div class="flex items-center gap-2">
+              <span class="text-base">💧 今日飲水</span>
+              <span id="waterSummaryBadge" class="ehon-pill px-2.5 py-0.5 text-xs bg-paper">0 / 2,500cc</span>
+            </div>
+            <svg data-arrow="water" width="18" height="18" viewBox="0 0 24 24" fill="none" class="shrink-0 transition-transform rotate-180">
+              <path d="M6 9L12 15L18 9" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div data-body="water" class="mt-3">
+            <div class="flex items-center gap-3">
+              <!-- 原創 SVG 水杯（水位隨飲水量動態上升） -->
+              <div class="w-16 h-20 shrink-0 flex items-center justify-center bg-paper rounded-2xl border-[3px] border-[#3E3A39] p-1">
+                <svg class="anim-breathe" width="50" height="62" viewBox="0 0 56 68" fill="none">
+                  <defs>
+                    <clipPath id="cupClip">
+                      <path d="M11 14H45L41 58C40.6 61.5 37.8 63 34.5 63H21.5C18.2 63 15.4 61.5 15 58L11 14Z"/>
+                    </clipPath>
+                  </defs>
+                  <path d="M11 14H45L41 58C40.6 61.5 37.8 63 34.5 63H21.5C18.2 63 15.4 61.5 15 58L11 14Z" fill="#FFFCF6"/>
+                  <g clip-path="url(#cupClip)">
+                    <rect id="waterSvgRect" x="8" y="63" width="40" height="0" fill="#A8D3E6"/>
+                    <line id="waterSvgLine" x1="8" y1="63" x2="48" y2="63" stroke="#3E3A39" stroke-width="2.5"/>
+                  </g>
+                  <path d="M11 14H45L41 58C40.6 61.5 37.8 63 34.5 63H21.5C18.2 63 15.4 61.5 15 58L11 14Z" stroke="#3E3A39" stroke-width="3" stroke-linejoin="round"/>
+                  <circle cx="22.5" cy="39" r="2" fill="#3E3A39"/>
+                  <circle cx="33.5" cy="39" r="2" fill="#3E3A39"/>
+                  <circle cx="18.5" cy="43" r="2.2" fill="#F2A497"/>
+                  <circle cx="37.5" cy="43" r="2.2" fill="#F2A497"/>
+                  <path d="M25.5 43.5C26.8 45.2 29.2 45.2 30.5 43.5" stroke="#3E3A39" stroke-width="2.4" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-1">
+                  <span class="text-xs opacity-85">不含茶與咖啡</span>
+                  <span id="waterGoalBadge" class="ehon-pill px-2.5 py-0.5 text-xs bg-paper">目標 2,500cc</span>
+                </div>
+                <div class="mt-0.5 flex items-baseline gap-1">
+                  <span id="waterAmountText" class="text-2xl">0</span>
+                  <span class="text-xs">/ 2,500 cc</span>
+                </div>
+                <div class="grid grid-cols-3 gap-1.5 mt-2">
+                  <button type="button" data-water="-250" class="ehon-btn py-1.5 text-xs">-250cc</button>
+                  <button type="button" data-water="250" class="ehon-btn py-1.5 text-xs bg-yellow">+250cc</button>
+                  <button type="button" data-water="500" class="ehon-btn py-1.5 text-xs bg-green">+500cc</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 晨間血壓與快速體重（預設收起，點擊標題展開） -->
+        <div class="ehon-card p-3.5">
+          <button type="button" data-toggle-section="bpWeight" class="w-full flex items-center justify-between gap-2 text-left bg-transparent border-0 p-0 cursor-pointer text-[#3E3A39]">
+            <div class="flex items-center gap-2 min-w-0">
+              <svg class="anim-breathe shrink-0" width="28" height="28" viewBox="0 0 40 40" fill="none">
+                <path d="M20 33C20 33 7 25.2 7 15.5C7 10.8 10.6 7.5 14.8 7.5C17.4 7.5 19.2 8.8 20 10.4C20.8 8.8 22.6 7.5 25.2 7.5C29.4 7.5 33 10.8 33 15.5C33 25.2 20 33 20 33Z" fill="#F2A497" stroke="#3E3A39" stroke-width="2.8" stroke-linejoin="round"/>
+                <path d="M12.5 19H16.5L18.5 14.5L21.5 22.5L23.5 19H27.5" stroke="#3E3A39" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="min-w-0">
+                <h2 class="text-base leading-tight">晨間血壓與快速體重</h2>
+                <p id="bpWeightSummary" class="text-[11px] opacity-75 truncate">點此填寫</p>
+              </div>
+            </div>
+            <svg data-arrow="bpWeight" width="18" height="18" viewBox="0 0 24 24" fill="none" class="shrink-0 transition-transform">
+              <path d="M6 9L12 15L18 9" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div data-body="bpWeight" class="hidden mt-3 pt-3 border-t-2 border-dashed border-[#3E3A39]/30 space-y-3">
+            <div class="flex justify-end">
+              <button id="btnJumpBodyTab" type="button" class="ehon-pill px-2.5 py-0.5 text-[11px] bg-green">完整體組成 →</button>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label for="bpSys" class="block text-[11px] mb-1">收縮壓(高)</label>
+                <input id="bpSys" type="number" min="50" max="260" placeholder="mmHg" class="ehon-input text-center" />
+              </div>
+              <div>
+                <label for="bpDia" class="block text-[11px] mb-1">舒張壓(低)</label>
+                <input id="bpDia" type="number" min="30" max="160" placeholder="mmHg" class="ehon-input text-center" />
+              </div>
+              <div>
+                <label for="bpPulse" class="block text-[11px] mb-1">心跳(次/分)</label>
+                <input id="bpPulse" type="number" min="30" max="220" placeholder="bpm" class="ehon-input text-center" />
+              </div>
+            </div>
+
+            <!-- 血壓安全閥警示（收縮壓 >= 160） -->
+            <div id="bpAlertBox" class="hidden p-3 rounded-2xl border-[3px] border-[#3E3A39] bg-coral" style="box-shadow: var(--shadow-hard-xs);">
+              <p class="text-xs leading-relaxed"><strong>⚠️ 血壓安全閥啟動：</strong>收縮壓已達 160 mmHg 以上，請暫停今日運動訓練、多休息並持續追蹤血壓！</p>
+            </div>
+
+            <div class="flex items-center gap-2.5 p-2.5 ehon-subcard">
+              <span class="text-xs shrink-0">今日體重 (kg)</span>
+              <input id="quickWeightInput" type="number" step="0.1" min="20" max="250" placeholder="同步至體態數據" class="ehon-input py-1.5 text-sm" />
+              <span id="quickWeightDelta" class="text-xs shrink-0 px-2 py-1 rounded-full border-2 border-[#3E3A39] bg-paper">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 今日作息與用藥防線（智慧聚焦模式：點擊標題切換全部／聚焦） -->
+        <div class="ehon-card p-3.5 space-y-2.5">
+          <button id="btnToggleScheduleFocus" type="button" class="w-full text-left bg-transparent border-0 p-0 cursor-pointer text-[#3E3A39]">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <svg class="anim-sway shrink-0" width="26" height="26" viewBox="0 0 36 36" fill="none">
+                  <rect x="6" y="13" width="24" height="11" rx="5.5" transform="rotate(-28 6 13)" fill="#F2A497" stroke="#3E3A39" stroke-width="2.6"/>
+                  <path d="M16.5 11L21.5 20.5" stroke="#3E3A39" stroke-width="2.6"/>
+                  <circle cx="28" cy="10" r="2.5" fill="#F6D27A" stroke="#3E3A39" stroke-width="2"/>
+                </svg>
+                <span class="text-base truncate">今日作息與用藥防線</span>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <span id="progressCountText" class="ehon-pill px-2 py-0.5 text-xs bg-green">0 / 16</span>
+                <svg id="scheduleFocusArrow" width="18" height="18" viewBox="0 0 24 24" fill="none" class="transition-transform">
+                  <path d="M6 9L12 15L18 9" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 mt-2 flex-wrap">
+              <span id="currentClockBadge" class="text-[11px] px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-cream">現在 12:00</span>
+              <span id="scheduleModeBadge" class="text-[11px] px-2.5 py-0.5 rounded-full border-2 border-[#3E3A39] bg-yellow">聚焦中 · 點標題看全部</span>
+            </div>
+          </button>
+
+          <div class="w-full h-4 rounded-full border-[3px] border-[#3E3A39] overflow-hidden bg-cream">
+            <div id="progressBarFill" class="h-full transition-all duration-300 bg-green" style="width: 0%;"></div>
+          </div>
+          <p id="scheduleWindowHint" class="text-xs opacity-85"></p>
+
+          <div id="scheduleListContainer" class="space-y-2.5 pt-1"></div>
+        </div>
+
+        <!-- 4. 今日運動紀錄（預設收起，點擊標題展開） -->
+        <div class="ehon-card p-3.5">
+          <button type="button" data-toggle-section="exercise" class="w-full flex items-center justify-between gap-2 text-left bg-transparent border-0 p-0 cursor-pointer text-[#3E3A39]">
+            <div class="flex items-center gap-2 min-w-0">
+              <svg class="anim-float shrink-0" width="28" height="28" viewBox="0 0 40 40" fill="none">
+                <rect x="4" y="13" width="6" height="14" rx="3" fill="#B9DAA5" stroke="#3E3A39" stroke-width="2.8"/>
+                <rect x="30" y="13" width="6" height="14" rx="3" fill="#B9DAA5" stroke="#3E3A39" stroke-width="2.8"/>
+                <rect x="10" y="17.5" width="20" height="5" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.8"/>
+              </svg>
+              <div class="min-w-0">
+                <h2 class="text-base leading-tight">今日運動紀錄</h2>
+                <p id="exerciseSummary" class="text-[11px] opacity-75 truncate">尚未紀錄 · 點此展開</p>
+              </div>
+            </div>
+            <svg data-arrow="exercise" width="18" height="18" viewBox="0 0 24 24" fill="none" class="shrink-0 transition-transform">
+              <path d="M6 9L12 15L18 9" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div data-body="exercise" class="hidden mt-3 pt-3 border-t-2 border-dashed border-[#3E3A39]/30 space-y-3">
+            <div class="flex justify-end">
+              <span class="text-[11px] px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-yellow">不憋氣・緩慢起身</span>
+            </div>
+            <div id="exerciseTagsContainer" class="flex flex-wrap gap-1.5"></div>
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label for="exerciseDuration" class="block text-[11px] mb-1">時長（分鐘）</label>
+                <input id="exerciseDuration" type="number" min="0" max="300" placeholder="60" class="ehon-input" />
+              </div>
+              <div class="col-span-2">
+                <label for="exerciseNotes" class="block text-[11px] mb-1">運動心得</label>
+                <input id="exerciseNotes" type="text" placeholder="微喘能說短句，流汗很舒服..." class="ehon-input" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 今日心情、身體狀況與隨手筆記（預設收起，點擊標題展開） -->
+        <div class="ehon-card p-3.5">
+          <button type="button" data-toggle-section="mood" class="w-full flex items-center justify-between gap-2 text-left bg-transparent border-0 p-0 cursor-pointer text-[#3E3A39]">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-xl leading-none">🌷</span>
+              <div class="min-w-0">
+                <h2 class="text-base leading-tight">今日心情與身體狀況</h2>
+                <p id="moodSummary" class="text-[11px] opacity-75 truncate">尚未選擇 · 點此展開</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span id="selectedMoodLabel" class="ehon-pill px-2 py-0.5 text-[11px] bg-coral">尚未選擇</span>
+              <svg data-arrow="mood" width="18" height="18" viewBox="0 0 24 24" fill="none" class="transition-transform">
+                <path d="M6 9L12 15L18 9" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </button>
+
+          <div data-body="mood" class="hidden mt-3 pt-3 border-t-2 border-dashed border-[#3E3A39]/30 space-y-3.5">
+            <!-- 5 款原創 SVG 心情小臉 -->
+            <div id="moodPickerContainer" class="grid grid-cols-5 gap-1.5"></div>
+
+            <div>
+              <label class="block text-xs mb-1.5">身體狀況（可多選）</label>
+              <div id="symptomsContainer" class="flex flex-wrap gap-1.5"></div>
+              <div id="muscleAlertBox" class="hidden mt-2.5 p-3 rounded-2xl border-[3px] border-[#3E3A39] bg-coral" style="box-shadow: var(--shadow-hard-xs);">
+                <p class="text-xs leading-relaxed"><strong>💡 脂瑞妥與肌肉痠痛提醒：</strong>若出現持續性雙側大肌群痠痛或無力，可能與降血脂藥（脂瑞妥）有關；請記錄發生天數、回診時告知醫師評估（切勿自行停藥），若伴隨茶色尿液請儘速就醫。</p>
+              </div>
+            </div>
+
+            <div>
+              <label for="dailyNotes" class="block text-xs mb-1">每日隨手筆記</label>
+              <textarea id="dailyNotes" rows="2" placeholder="記錄今天的小確幸、排便睡眠、或想問醫師的事..." class="ehon-input"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           分頁二：體態數據 (tab-body)
+           ===================================================================== -->
+      <section id="tab-body" class="tab-panel hidden space-y-3.5">
+        <!-- 1. 趨勢折線圖（置於最上方，可收合，預設展開） -->
+        <div class="ehon-card p-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <button type="button" data-toggle-section="trendChart" class="flex-1 flex items-center gap-2 text-left bg-transparent border-0 p-0 cursor-pointer text-[#3E3A39] min-w-0">
+              <svg class="anim-float shrink-0" width="34" height="34" viewBox="0 0 48 48" fill="none">
+                <circle cx="13" cy="11" r="5" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.6"/>
+                <circle cx="35" cy="11" r="5" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.6"/>
+                <rect x="7" y="12" width="34" height="30" rx="10" fill="#B9DAA5" stroke="#3E3A39" stroke-width="2.8"/>
+                <rect x="13" y="17" width="22" height="9" rx="4.5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.4"/>
+                <path d="M24 25L28 19.5" stroke="#3E3A39" stroke-width="2.4" stroke-linecap="round"/>
+                <circle cx="19" cy="32" r="1.8" fill="#3E3A39"/>
+                <circle cx="29" cy="32" r="1.8" fill="#3E3A39"/>
+                <path d="M22 34.5C23 36 25 36 26 34.5" stroke="#3E3A39" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+              <div class="min-w-0">
+                <h2 class="text-base leading-tight">趨勢折線圖</h2>
+                <p id="trendSummaryLine" class="text-[11px] opacity-75 truncate">當日體重：—</p>
+              </div>
+              <svg data-arrow="trendChart" width="18" height="18" viewBox="0 0 24 24" fill="none" class="shrink-0 ml-auto transition-transform rotate-180">
+                <path d="M6 9L12 15L18 9" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button id="btnOpenGoalsModal" type="button" class="ehon-btn px-2.5 py-1 text-xs bg-yellow shrink-0">🎯 目標</button>
+          </div>
+
+          <div data-body="trendChart" class="mt-3 space-y-3">
+            <!-- 體重關鍵漲跌摘要 -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="ehon-subcard p-2 bg-green text-center">
+                <div class="text-[11px] opacity-80">當日體重</div>
+                <div class="text-xl mt-0.5"><span id="statTodayWeight">—</span> <span class="text-xs">kg</span></div>
+              </div>
+              <div class="ehon-subcard p-2 bg-paper text-center">
+                <div class="text-[11px] opacity-75">較前一次漲跌</div>
+                <div id="statWeightDeltaPrev" class="text-sm mt-1">—</div>
+              </div>
+              <div class="ehon-subcard p-2 bg-paper text-center">
+                <div class="text-[11px] opacity-75">累計總變化</div>
+                <div id="statWeightDeltaTotal" class="text-xs mt-1">—</div>
+              </div>
+              <div class="ehon-subcard p-2 bg-paper text-center">
+                <div class="text-[11px] opacity-75">距離目標體重</div>
+                <div id="statWeightToGoal" class="text-xs mt-1">未設定目標</div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div id="chartMetricButtons" class="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                <button type="button" data-metric="weight" class="ehon-pill px-2.5 py-1 text-xs shrink-0 bg-green">體重</button>
+                <button type="button" data-metric="bodyFat" class="ehon-pill px-2.5 py-1 text-xs shrink-0">體脂率</button>
+                <button type="button" data-metric="wholeMuscle" class="ehon-pill px-2.5 py-1 text-xs shrink-0">全身肌肉比</button>
+                <button type="button" data-metric="waist" class="ehon-pill px-2.5 py-1 text-xs shrink-0">腰圍</button>
+                <button type="button" data-metric="leanIndex" class="ehon-pill px-2.5 py-1 text-xs shrink-0">易瘦係數</button>
+              </div>
+              <div id="chartRangeButtons" class="flex items-center gap-1">
+                <button type="button" data-range="7" class="ehon-pill px-2 py-0.5 text-[11px] bg-yellow">近7筆</button>
+                <button type="button" data-range="14" class="ehon-pill px-2 py-0.5 text-[11px]">近14筆</button>
+                <button type="button" data-range="30" class="ehon-pill px-2 py-0.5 text-[11px]">近30筆</button>
+                <button type="button" data-range="999" class="ehon-pill px-2 py-0.5 text-[11px]">全部</button>
+              </div>
+            </div>
+
+            <div id="trendChartContainer" class="w-full rounded-2xl border-[3px] border-[#3E3A39] bg-cream p-2 overflow-hidden"></div>
+          </div>
+        </div>
+
+        <!-- 2. 詳細體組成（14 項）—— 預設收起，內含自動計算之體脂肪重與易瘦體質係數 -->
+        <div class="ehon-card p-3.5">
+          <button type="button" data-toggle-section="bodyComp" class="w-full flex items-center justify-between gap-2 text-left bg-transparent border-0 p-0 cursor-pointer text-[#3E3A39]">
+            <div class="min-w-0">
+              <h3 class="text-base leading-tight">📊 詳細體組成（14 項）</h3>
+              <p id="bodyCompSummary" class="text-[11px] opacity-75 truncate mt-0.5">點擊展開輸入・含自動計算指標</p>
+            </div>
+            <svg data-arrow="bodyComp" width="18" height="18" viewBox="0 0 24 24" fill="none" class="shrink-0 transition-transform">
+              <path d="M6 9L12 15L18 9" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div data-body="bodyComp" class="hidden mt-3 pt-3 border-t-2 border-dashed border-[#3E3A39]/30 space-y-3">
+            <!-- 自動產生項目（置於詳細體組成區塊內頂部） -->
+            <div class="grid grid-cols-2 gap-2.5">
+              <div class="ehon-subcard p-3 bg-yellow">
+                <div class="text-[11px] opacity-85">體脂肪重（自動）</div>
+                <div class="text-xl mt-0.5"><span id="autoFatMassVal">—</span> <span class="text-xs">kg</span></div>
+                <div class="text-[10px] opacity-75 mt-0.5">體重 × 體脂率 ÷ 100</div>
+                <div id="autoFatMassDelta" class="text-[11px] mt-1.5">—</div>
+              </div>
+
+              <div class="ehon-subcard p-3 bg-blue">
+                <div class="flex items-center justify-between gap-1">
+                  <span class="text-[11px] opacity-85">易瘦體質係數</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full border-2 border-[#3E3A39] bg-paper">&gt; 24</span>
+                </div>
+                <div class="text-xl mt-0.5"><span id="autoLeanIndexVal">—</span></div>
+                <div id="autoLeanBadge" class="mt-1"></div>
+                <div id="autoLeanIndexDelta" class="text-[11px] mt-1">—</div>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <button id="btnCopyLastBody" type="button" class="ehon-pill px-2.5 py-1 text-xs bg-blue">
+                📋 帶入上次數值微調
+              </button>
+            </div>
+
+            <div id="bodyCompFieldsContainer" class="grid grid-cols-2 gap-2.5"></div>
+          </div>
+        </div>
+
+        <!-- 3. 身體尺寸紀錄 (cm) —— 預設收起 -->
+        <div class="ehon-card p-3.5">
+          <button type="button" data-toggle-section="bodyMeasure" class="w-full flex items-center justify-between gap-2 text-left bg-transparent border-0 p-0 cursor-pointer text-[#3E3A39]">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-base leading-tight">📏 身體尺寸紀錄 (cm)</h3>
+                <span id="satMeasureBadge" class="ehon-pill px-2 py-0.5 text-[10px] bg-yellow">每週六例行量測</span>
+              </div>
+              <p id="bodyMeasureSummary" class="text-[11px] opacity-75 truncate mt-0.5">點擊展開記錄 7 項圍度</p>
+            </div>
+            <svg data-arrow="bodyMeasure" width="18" height="18" viewBox="0 0 24 24" fill="none" class="shrink-0 transition-transform">
+              <path d="M6 9L12 15L18 9" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div data-body="bodyMeasure" class="hidden mt-3 pt-3 border-t-2 border-dashed border-[#3E3A39]/30">
+            <div id="bodyMeasureFieldsContainer" class="grid grid-cols-2 gap-2.5"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           分頁三：影像日記 (tab-photos)
+           ===================================================================== -->
+      <section id="tab-photos" class="tab-panel hidden space-y-4">
+        <!-- 頂部相機小雲與子頁籤切換 -->
+        <div class="ehon-card p-3.5 bg-coral">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2.5">
+              <!-- 原創 SVG：相機小雲 -->
+              <svg class="anim-float" width="44" height="40" viewBox="0 0 52 44" fill="none">
+                <path d="M12 16H40C44 16 47 19 47 23V34C47 38 44 40 40 40H12C8 40 5 38 5 34V23C5 19 8 16 12 16Z" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.8"/>
+                <path d="M17 16L20 10H32L35 16" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.8" stroke-linejoin="round"/>
+                <circle cx="26" cy="28" r="8" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2.8"/>
+                <circle cx="26" cy="28" r="3.5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.2"/>
+                <circle cx="39" cy="22" r="2.2" fill="#F2A497" stroke="#3E3A39" stroke-width="2"/>
+              </svg>
+              <div>
+                <h2 class="text-lg leading-tight">影像日記</h2>
+                <p class="text-[11px] opacity-90">自動壓縮存入本機，留住飲食與身形變化</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button id="subTabDietPhoto" type="button" class="ehon-btn py-2 text-sm bg-yellow">🥗 飲食記錄</button>
+            <button id="subTabBodyPhoto" type="button" class="ehon-btn py-2 text-sm bg-paper">🪞 體型紀錄</button>
+          </div>
+        </div>
+
+        <!-- 新增照片表單卡 -->
+        <div class="ehon-card p-3.5 space-y-3">
+          <h3 id="photoUploadTitle" class="text-base">新增當日飲食照片</h3>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label id="photoTagLabel" for="photoTagSelect" class="block text-xs mb-1">餐別</label>
+              <select id="photoTagSelect" class="ehon-select"></select>
+            </div>
+            <div>
+              <label for="photoTimeInput" class="block text-xs mb-1">時間 / 備註標籤</label>
+              <input id="photoTimeInput" type="time" class="ehon-input" />
+            </div>
+          </div>
+
+          <div>
+            <label for="photoNoteInput" class="block text-xs mb-1">文字備註</label>
+            <input id="photoNoteInput" type="text" placeholder="例如：4321 餐盤去鈉完成、今天穿這件褲子變鬆了..." class="ehon-input" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5 pt-1">
+            <button id="btnTakePhoto" type="button" class="ehon-btn py-2.5 text-sm bg-green">
+              📷 直接拍照
+            </button>
+            <button id="btnPickGallery" type="button" class="ehon-btn py-2.5 text-sm bg-blue">
+              🖼️ 選擇相簿
+            </button>
+            <input id="inputCameraPhoto" type="file" accept="image/*" capture="environment" class="hidden" />
+            <input id="inputGalleryPhoto" type="file" accept="image/*" class="hidden" />
+          </div>
+        </div>
+
+        <!-- 體型紀錄專屬：前後對比模式卡片 -->
+        <div id="bodyCompareCard" class="hidden ehon-card p-3.5 space-y-3 bg-cream">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base">✨ 身形前後對比</h3>
+            <span id="compareWeightDiffBadge" class="ehon-pill px-2.5 py-0.5 text-xs bg-green">選擇兩張對比</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <select id="compareSelectA" class="ehon-select text-xs"></select>
+            <select id="compareSelectB" class="ehon-select text-xs"></select>
+          </div>
+
+          <div id="comparePreviewGrid" class="grid grid-cols-2 gap-2.5"></div>
+        </div>
+
+        <!-- 照片列表（支援切換當日／全部） -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h3 id="photoListHeading" class="text-base">當日飲食照片</h3>
+            <div class="flex items-center gap-1.5">
+              <button id="btnPhotoScopeDay" type="button" class="ehon-pill px-2.5 py-1 text-xs bg-yellow">當日</button>
+              <button id="btnPhotoScopeAll" type="button" class="ehon-pill px-2.5 py-1 text-xs">全部</button>
+            </div>
+          </div>
+
+          <div id="photoGridContainer" class="grid grid-cols-2 gap-3"></div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           分頁四：記帳本 (tab-money)
+           ===================================================================== -->
+      <section id="tab-money" class="tab-panel hidden space-y-4">
+        <!-- 1. 今日與本月收支儀表板 -->
+        <div class="ehon-card p-3.5 bg-yellow space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <!-- 原創 SVG：小豬撲滿 -->
+              <svg class="anim-float" width="38" height="38" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="8" r="4.5" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.4"/>
+                <ellipse cx="20" cy="24" rx="13" ry="10" fill="#F2A497" stroke="#3E3A39" stroke-width="2.8"/>
+                <rect x="16" y="16.5" width="8" height="2.4" rx="1.2" fill="#3E3A39"/>
+                <circle cx="14.5" cy="22.5" r="1.7" fill="#3E3A39"/>
+                <ellipse cx="8.5" cy="24.5" rx="3.2" ry="2.6" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.4"/>
+                <path d="M14 33V36M26 33V36" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round"/>
+              </svg>
+              <div>
+                <h2 class="text-lg leading-tight">健康記帳本</h2>
+                <p id="moneyMonthLabel" class="text-[11px] opacity-85">2026 年 11 月收支總覽</p>
+              </div>
+            </div>
+            <button id="btnOpenAccountsModal" type="button" class="ehon-btn px-2.5 py-1.5 text-xs bg-paper">
+              💳 管理帳戶
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="ehon-subcard p-2 bg-paper text-center">
+              <div class="text-[11px] opacity-75">今日支出 / 收入</div>
+              <div class="text-sm mt-0.5">
+                <span class="px-1.5 rounded bg-coral">-$<span id="todayExpenseVal">0</span></span>
+                <span class="px-1.5 rounded bg-green ml-1">+$<span id="todayIncomeVal">0</span></span>
+              </div>
+            </div>
+            <div class="ehon-subcard p-2 bg-paper text-center">
+              <div class="text-[11px] opacity-75">本月結餘</div>
+              <div class="text-base mt-0.5">$<span id="monthNetVal">0</span></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-center text-xs">
+            <div class="rounded-xl border-2 border-[#3E3A39] py-1 px-2 bg-green">本月總收入：$<span id="monthIncomeVal">0</span></div>
+            <div class="rounded-xl border-2 border-[#3E3A39] py-1 px-2 bg-coral">本月總支出：$<span id="monthExpenseVal">0</span></div>
+          </div>
+        </div>
+
+        <!-- 2. 我的帳戶卡片區 -->
+        <div class="ehon-card p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base">我的帳戶即時餘額</h3>
+            <span class="text-[11px] opacity-75">點帳戶可篩選明細</span>
+          </div>
+          <div id="accountsCardsContainer" class="grid grid-cols-2 gap-2"></div>
+        </div>
+
+        <!-- 3. 自訂常用按鈕一鍵記帳 -->
+        <div class="ehon-card p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base">⚡ 常用一鍵記帳</h3>
+            <button id="btnOpenQuickBtnsModal" type="button" class="ehon-pill px-2.5 py-0.5 text-xs bg-blue">
+              ⚙️ 自訂按鈕
+            </button>
+          </div>
+          <div id="quickButtonsContainer" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- 4. 新增交易表單 -->
+        <div class="ehon-card p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base">記一筆收支</h3>
+            <div class="flex items-center gap-1.5">
+              <button id="txTypeExpenseBtn" type="button" class="ehon-pill px-3 py-1 text-xs bg-coral">支出</button>
+              <button id="txTypeIncomeBtn" type="button" class="ehon-pill px-3 py-1 text-xs">收入</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-5 gap-2">
+            <input id="txTitleInput" type="text" placeholder="項目名稱（如：健康餐盒）" class="ehon-input col-span-3" />
+            <input id="txAmountInput" type="number" min="0" placeholder="金額" class="ehon-input col-span-2" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label for="txCategorySelect" class="block text-[11px] mb-1">分類</label>
+              <select id="txCategorySelect" class="ehon-select"></select>
+            </div>
+            <div>
+              <label for="txAccountSelect" class="block text-[11px] mb-1">帳戶</label>
+              <select id="txAccountSelect" class="ehon-select"></select>
+            </div>
+          </div>
+
+          <button id="btnAddTx" type="button" class="ehon-btn w-full py-2.5 text-sm bg-yellow">
+            ＋ 新增至當日帳本
+          </button>
+        </div>
+
+        <!-- 5. 當日交易明細 -->
+        <div class="ehon-card p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base">當日收支明細</h3>
+            <button id="btnClearAccountFilter" type="button" class="hidden ehon-pill px-2 py-0.5 text-[11px] bg-cream">顯示全部帳戶</button>
+          </div>
+          <div id="txListContainer" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           分頁五：總覽與備份 (tab-overview)
+           ===================================================================== -->
+      <section id="tab-overview" class="tab-panel hidden space-y-4">
+        <!-- 本週健康摘要卡 -->
+        <div class="ehon-card p-4 bg-cream space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg">本週健康總覽</h2>
+            <span id="weekRangeText" class="ehon-pill px-2.5 py-0.5 text-xs bg-yellow">—</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="ehon-subcard p-2 bg-paper">
+              <div class="text-[11px] opacity-75">本週平均達成</div>
+              <div class="text-base mt-0.5"><span id="ovAvgCompletion">0</span>%</div>
+            </div>
+            <div class="ehon-subcard p-2 bg-paper">
+              <div class="text-[11px] opacity-75">飲水達標</div>
+              <div class="text-base mt-0.5"><span id="ovWaterDays">0</span> / 7 天</div>
+            </div>
+            <div class="ehon-subcard p-2 bg-paper">
+              <div class="text-[11px] opacity-75">近期體重變化</div>
+              <div id="ovWeightTrend" class="text-sm mt-1">—</div>
+            </div>
+          </div>
+
+          <!-- 7 天互動列表 -->
+          <div id="weekDaysContainer" class="space-y-2"></div>
+        </div>
+
+        <!-- 本月收支與各帳戶餘額總覽 -->
+        <div class="ehon-card p-4 space-y-3">
+          <h3 class="text-base">本月收支與帳戶總覽</h3>
+          <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="ehon-subcard p-2 bg-green">收入<div class="text-sm mt-0.5">$<span id="ovMonthInc">0</span></div></div>
+            <div class="ehon-subcard p-2 bg-coral">支出<div class="text-sm mt-0.5">$<span id="ovMonthExp">0</span></div></div>
+            <div class="ehon-subcard p-2 bg-yellow">結餘<div class="text-sm mt-0.5">$<span id="ovMonthNet">0</span></div></div>
+          </div>
+          <div id="ovAccountsSummary" class="space-y-1.5"></div>
+        </div>
+
+        <!-- 範例資料快速體驗卡 -->
+        <div class="ehon-card p-4 bg-blue space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base">✨ 立即體驗範例數據</h3>
+            <span class="text-[11px] px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-paper">7天趨勢示範</span>
+          </div>
+          <p class="text-xs leading-relaxed">想先看看體重折線圖、詳細體組成漲跌與多帳戶記帳效果嗎？可一鍵載入 7 天自然範例數據（不會覆蓋你已填寫的日期）。</p>
+          <button id="btnLoadDemoData" type="button" class="ehon-btn w-full py-2 text-sm bg-yellow">
+            載入 7 天範例數據
+          </button>
+        </div>
+
+        <!-- 資料備份與還原 -->
+        <div class="ehon-card p-4 space-y-3">
+          <h3 class="text-base">日帳資料備份與管理</h3>
+          <p class="text-xs opacity-85 leading-relaxed">文字紀錄自動儲存於瀏覽器本機，照片儲存於 IndexedDB。建議定期匯出 JSON 檔案保存。</p>
+
+          <label class="flex items-center gap-2 text-xs cursor-pointer">
+            <input id="exportIncludePhotos" type="checkbox" class="w-4 h-4 accent-[#3E3A39]" />
+            <span>匯出時一併包含影像日記照片（檔案會較大）</span>
+          </label>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <button id="btnExportJson" type="button" class="ehon-btn py-2.5 text-sm bg-green">
+              📤 匯出備份
+            </button>
+            <button id="btnImportJson" type="button" class="ehon-btn py-2.5 text-sm bg-blue">
+              📥 匯入還原
+            </button>
+            <input id="importFileInput" type="file" accept=".json,application/json" class="hidden" />
+          </div>
+
+          <button id="btnResetAllData" type="button" class="ehon-btn w-full py-2 text-xs bg-coral">
+            🗑️ 清除全部／重置資料
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- =======================================================================
+         底部 5 分頁固定導覽列
+         ======================================================================= -->
+    <nav class="bottom-nav" aria-label="主要導覽">
+      <div class="flex items-center gap-1">
+        <button type="button" class="nav-tab active" data-tab="schedule">
+          <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="5" width="20" height="19" rx="5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.5"/>
+            <path d="M9 12L12.2 15.2L19 9.5" stroke="#3E3A39" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 19H19" stroke="#3E3A39" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span>今日作息</span>
+        </button>
+
+        <button type="button" class="nav-tab" data-tab="body">
+          <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="5" width="20" height="18" rx="5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.5"/>
+            <path d="M8 18L12 13L15.5 16L20 10" stroke="#3E3A39" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>體態數據</span>
+        </button>
+
+        <button type="button" class="nav-tab" data-tab="photos">
+          <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="8" width="20" height="15" rx="4.5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.5"/>
+            <path d="M10 8L12 5H16L18 8" stroke="#3E3A39" stroke-width="2.5" stroke-linejoin="round"/>
+            <circle cx="14" cy="15.5" r="4" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2.3"/>
+          </svg>
+          <span>影像日記</span>
+        </button>
+
+        <button type="button" class="nav-tab" data-tab="money">
+          <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="10" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.5"/>
+            <path d="M14 8.5V19.5M17 11.2C17 10 15.7 9.5 14 9.5C12.3 9.5 11 10.2 11 11.5C11 13.8 17 13.4 17 16C17 17.4 15.7 18.2 14 18.2C12.2 18.2 11 17.5 11 16.3" stroke="#3E3A39" stroke-width="2.3" stroke-linecap="round"/>
+          </svg>
+          <span>記帳本</span>
+        </button>
+
+        <button type="button" class="nav-tab" data-tab="overview">
+          <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="6" width="20" height="17" rx="4.5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.5"/>
+            <path d="M4 11.5H24" stroke="#3E3A39" stroke-width="2.5"/>
+            <path d="M9.5 4V8M18.5 4V8" stroke="#3E3A39" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="10" cy="16.5" r="1.5" fill="#3E3A39"/>
+            <circle cx="14" cy="16.5" r="1.5" fill="#3E3A39"/>
+            <circle cx="18" cy="16.5" r="1.5" fill="#3E3A39"/>
+          </svg>
+          <span>總覽備份</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- 已儲存小氣泡 -->
+    <div id="saveToast" class="save-toast" role="status" aria-live="polite">已儲存</div>
+  </div>
+
+  <!-- =========================================================================
+       彈窗 1：絕對避雷小抄
+       ========================================================================= -->
+  <div id="rulesModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="rulesModalTitle">
+    <div class="ehon-card w-full max-w-[430px] max-h-[85vh] overflow-y-auto p-4 space-y-3">
+      <div class="flex items-center justify-between sticky top-0 bg-paper pb-2 border-b-[3px] border-[#3E3A39]">
+        <div class="flex items-center gap-2">
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+            <path d="M16 4L28 26H4L16 4Z" fill="#F2A497" stroke="#3E3A39" stroke-width="2.8" stroke-linejoin="round"/>
+            <path d="M16 12V18" stroke="#3E3A39" stroke-width="2.8" stroke-linecap="round"/>
+            <circle cx="16" cy="22" r="1.6" fill="#3E3A39"/>
+          </svg>
+          <h2 id="rulesModalTitle" class="text-lg">絕對避雷小抄</h2>
+        </div>
+        <button id="btnCloseRules" type="button" class="ehon-pill px-3 py-1 text-xs bg-yellow">關閉</button>
+      </div>
+
+      <ul class="space-y-2 text-xs leading-relaxed">
+        <li class="p-2.5 rounded-2xl border-[3px] border-[#3E3A39] bg-coral"><strong>1. 避開超商雞胸肉（高鈉）：</strong>高鈉 (400–800mg) 易抵銷血壓藥效並導致水腫，請改選毛豆、板豆腐或自煮雞肉。</li>
+        <li class="p-2.5 rounded-2xl border-[3px] border-[#3E3A39] bg-coral"><strong>2. 禁用包裝海苔（高碘高鈉）：</strong>高碘會擾亂甲狀腺，且高鈉高油；沙拉請改用美生菜或蘿蔓葉包著吃。</li>
+        <li class="p-2.5 rounded-2xl border-[3px] border-[#3E3A39] bg-green"><strong>3. 禁吃生十字花科蔬菜（必燙熟）：</strong>羽衣甘藍、花椰菜、高麗菜、青江菜等務必完全煮熟，避免釋放致甲狀腺腫素。</li>
+        <li class="p-2.5 rounded-2xl border-[3px] border-[#3E3A39] bg-coral"><strong>4. 拒絕代謝類保健品：</strong>標榜「促進代謝」產品常含咖啡因或高碘，恐破壞血壓與甲狀腺穩定。</li>
+        <li class="p-2.5 rounded-2xl border-[3px] border-[#3E3A39] bg-green"><strong>5. 運動嚴禁憋氣與慢起身：</strong>發力吐氣防血壓飆升；採「側轉身→單膝跪地→慢起」防姿勢性低血壓；忽略手錶心率改以「微喘能說短句」為準。</li>
+        <li class="p-2.5 rounded-2xl border-[3px] border-[#3E3A39] bg-yellow"><strong>6. 葡萄柚／柚子類先不吃：</strong>恐與降壓藥（脈優）、降脂藥（脂瑞妥）產生交互作用，請先避開並詢問藥師。</li>
+        <li class="p-2.5 rounded-2xl border-[3px] border-[#3E3A39] bg-blue"><strong>7. 豆漿一律選無加糖非高鈣：</strong>常買款（義美古早傳統豆奶、統一陽光黃金豆、光泉無加糖黑豆漿、義美無加糖黑豆奶）不干擾活甲錠也方便併餐補鐵；日常鈣質改由深綠蔬菜、板豆腐、小魚乾與無糖希臘優格補充。</li>
+        <li class="p-2.5 rounded-2xl border-[3px] border-[#3E3A39] bg-yellow"><strong>8. 水果一天 2 份就好：</strong>控制果糖攝取，避免轉化為三酸甘油酯。</li>
+        <li class="p-2.5 rounded-2xl border-[3px] border-[#3E3A39] bg-blue"><strong>9. 白開水每天 2,500cc：</strong>不含咖啡和茶，餐與餐之間分次小口喝完。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       彈窗 2：體態目標設定
+       ========================================================================= -->
+  <div id="goalsModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="goalsModalTitle">
+    <div class="ehon-card w-full max-w-[440px] max-h-[85vh] overflow-y-auto p-4 space-y-3">
+      <div class="flex items-center justify-between sticky top-0 bg-paper pb-2 border-b-[3px] border-[#3E3A39]">
+        <h2 id="goalsModalTitle" class="text-lg">🎯 體組成與尺寸目標設定</h2>
+        <button id="btnCloseGoals" type="button" class="ehon-pill px-3 py-1 text-xs bg-yellow">關閉</button>
+      </div>
+      <p class="text-xs opacity-80">為想追蹤的項目填寫目標值（留空代表不設目標），儲存後主畫面會自動計算差距與目標虛線。</p>
+      <div id="goalsFormContainer" class="grid grid-cols-2 gap-2.5"></div>
+      <button id="btnSaveGoals" type="button" class="ehon-btn w-full py-2.5 text-sm bg-green">儲存所有目標</button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       彈窗 3：管理帳戶
+       ========================================================================= -->
+  <div id="accountsModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="accountsModalTitle">
+    <div class="ehon-card w-full max-w-[440px] max-h-[85vh] overflow-y-auto p-4 space-y-3">
+      <div class="flex items-center justify-between sticky top-0 bg-paper pb-2 border-b-[3px] border-[#3E3A39]">
+        <h2 id="accountsModalTitle" class="text-lg">💳 自訂帳戶管理</h2>
+        <button id="btnCloseAccounts" type="button" class="ehon-pill px-3 py-1 text-xs bg-yellow">關閉</button>
+      </div>
+
+      <!-- 新增 / 編輯帳戶表單 -->
+      <div class="ehon-subcard p-3 space-y-2.5">
+        <div class="text-xs" id="accountFormHeading">新增帳戶</div>
+        <input id="editAccountId" type="hidden" />
+        <div class="grid grid-cols-2 gap-2">
+          <input id="accNameInput" type="text" placeholder="帳戶名稱（如：玉山卡）" class="ehon-input" />
+          <select id="accTypeSelect" class="ehon-select">
+            <option value="expense">現金／支出帳戶（珊瑚粉）</option>
+            <option value="income">銀行／收入帳戶（若竹綠）</option>
+            <option value="credit">信用卡（山吹黃）</option>
+            <option value="epay">電子支付（水色）</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="accInitialInput" type="number" placeholder="初始餘額（預設 0）" class="ehon-input flex-1" />
+          <button id="btnSaveAccount" type="button" class="ehon-btn px-4 py-2 text-xs bg-green shrink-0">儲存帳戶</button>
+        </div>
+      </div>
+
+      <!-- 現有帳戶列表 -->
+      <div id="accountsManageList" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       彈窗 4：自訂常用記帳按鈕
+       ========================================================================= -->
+  <div id="quickBtnsModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="quickBtnsModalTitle">
+    <div class="ehon-card w-full max-w-[440px] max-h-[85vh] overflow-y-auto p-4 space-y-3">
+      <div class="flex items-center justify-between sticky top-0 bg-paper pb-2 border-b-[3px] border-[#3E3A39]">
+        <h2 id="quickBtnsModalTitle" class="text-lg">⚡ 自訂常用記帳按鈕</h2>
+        <button id="btnCloseQuickBtns" type="button" class="ehon-pill px-3 py-1 text-xs bg-yellow">關閉</button>
+      </div>
+
+      <div class="ehon-subcard p-3 space-y-2.5">
+        <div class="text-xs" id="quickBtnFormHeading">新增常用按鈕</div>
+        <input id="editQuickBtnId" type="hidden" />
+        <div class="grid grid-cols-5 gap-2">
+          <input id="qbNameInput" type="text" placeholder="名稱（如：無糖豆漿）" class="ehon-input col-span-3" />
+          <input id="qbAmountInput" type="number" min="0" placeholder="金額" class="ehon-input col-span-2" />
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <select id="qbTypeSelect" class="ehon-select text-xs">
+            <option value="expense">支出</option>
+            <option value="income">收入</option>
+          </select>
+          <select id="qbCategorySelect" class="ehon-select text-xs"></select>
+          <select id="qbAccountSelect" class="ehon-select text-xs"></select>
+        </div>
+        <button id="btnSaveQuickBtn" type="button" class="ehon-btn w-full py-2 text-xs bg-green">儲存常用按鈕</button>
+      </div>
+
+      <div id="quickBtnsManageList" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       彈窗 5：照片放大檢視 (Lightbox)
+       ========================================================================= -->
+  <div id="photoLightboxModal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="ehon-card w-full max-w-[440px] p-3.5 space-y-3">
+      <div class="flex items-center justify-between">
+        <span id="lightboxTitle" class="text-sm">照片檢視</span>
+        <button id="btnCloseLightbox" type="button" class="ehon-pill px-3 py-1 text-xs bg-yellow">關閉</button>
+      </div>
+      <div class="rounded-2xl border-[3px] border-[#3E3A39] overflow-hidden bg-cream">
+        <img id="lightboxImg" src="" alt="放大照片" class="w-full max-h-[60vh] object-contain" />
+      </div>
+      <p id="lightboxCaption" class="text-xs leading-relaxed"></p>
+      <div class="flex justify-end">
+        <button id="btnDeleteLightboxPhoto" type="button" class="ehon-btn px-3 py-1.5 text-xs bg-coral">刪除這張照片</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       彈窗 6：通用提示與確認（取代 alert / confirm）
+       ========================================================================= -->
+  <div id="dialogModal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="ehon-card w-full max-w-[350px] p-5 text-center space-y-4">
+      <p id="dialogText" class="text-sm leading-relaxed"></p>
+      <div id="dialogButtons" class="flex items-center justify-center gap-3"></div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       健康電子日帳核心應用程式
+       - 文字與數值資料存於 localStorage (ehon_health_journal_v2)
+       - 壓縮照片存於 IndexedDB (EhonHealthPhotosDB)
+       - 啟動時自動註冊繪本風桌面 App 圖示與全螢幕 Standalone Manifest
+       ========================================================================= */
+    (function () {
+      const STORAGE_KEY = 'ehon_health_journal_v2';
+      const PREF_REDUCE_MOTION_KEY = 'ehon_reduce_motion_v1';
+      const IDB_NAME = 'EhonHealthPhotosDB';
+      const IDB_STORE = 'photos';
+      const WEEKDAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
+
+      // -----------------------------------------------------------------------
+      // 自動生成日系繪本風 192x192 App 圖示並注入 apple-touch-icon 與 Manifest
+      // -----------------------------------------------------------------------
+      function setupHomeScreenAppMeta() {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 192;
+          canvas.height = 192;
+          const ctx = canvas.getContext('2d');
+
+          // 和紙白背景
+          ctx.fillStyle = '#FFFCF6';
+          ctx.fillRect(0, 0, 192, 192);
+
+          // 外框裝飾
+          ctx.strokeStyle = '#3E3A39';
+          ctx.lineWidth = 10;
+          ctx.strokeRect(10, 10, 172, 172);
+
+          // 山吹黃小太陽
+          ctx.beginPath();
+          ctx.arc(132, 62, 28, 0, Math.PI * 2);
+          ctx.fillStyle = '#F6D27A';
+          ctx.fill();
+          ctx.lineWidth = 8;
+          ctx.stroke();
+
+          // 若竹綠雲朵
+          ctx.beginPath();
+          ctx.arc(72, 114, 28, Math.PI * 0.5, Math.PI * 1.5);
+          ctx.arc(102, 92, 32, Math.PI, Math.PI * 1.9);
+          ctx.arc(132, 116, 26, Math.PI * 1.5, Math.PI * 0.5);
+          ctx.closePath();
+          ctx.fillStyle = '#B9DAA5';
+          ctx.fill();
+          ctx.lineWidth = 8;
+          ctx.stroke();
+
+          // 微笑五官
+          ctx.fillStyle = '#3E3A39';
+          ctx.beginPath();
+          ctx.arc(82, 112, 4.5, 0, Math.PI * 2);
+          ctx.arc(114, 112, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#F2A497';
+          ctx.beginPath();
+          ctx.arc(70, 122, 6, 0, Math.PI * 2);
+          ctx.arc(126, 122, 6, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(98, 120, 9, 0.15 * Math.PI, 0.85 * Math.PI);
+          ctx.lineWidth = 6;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+
+          const iconDataUrl = canvas.toDataURL('image/png');
+
+          const appleIcon = document.createElement('link');
+          appleIcon.rel = 'apple-touch-icon';
+          appleIcon.href = iconDataUrl;
+          document.head.appendChild(appleIcon);
+
+          const favIcon = document.createElement('link');
+          favIcon.rel = 'icon';
+          favIcon.type = 'image/png';
+          favIcon.href = iconDataUrl;
+          document.head.appendChild(favIcon);
+
+          const manifestObj = {
+            name: '健康電子日帳',
+            short_name: '健康日帳',
+            start_url: '.',
+            display: 'standalone',
+            background_color: '#FFFCF6',
+            theme_color: '#FFFCF6',
+            icons: [
+              { src: iconDataUrl, sizes: '192x192', type: 'image/png' }
+            ]
+          };
+          const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+          const manifestLink = document.createElement('link');
+          manifestLink.rel = 'manifest';
+          manifestLink.href = URL.createObjectURL(manifestBlob);
+          document.head.appendChild(manifestLink);
+        } catch (e) {
+          // 忽略瀏覽器不支援動態 manifest 的情況
+        }
+      }
+
+      // -----------------------------------------------------------------------
+      // 三套完整作息與用藥檢核清單（最新確認版：平日早鳥 09:00–17:00／週六／週日）
+      // -----------------------------------------------------------------------
+      const SCHEDULE_TEMPLATES = {
+        weekday: {
+          label: '平日早鳥版',
+          hint: '早鳥 168 進食窗口：09:00 – 17:00（點擊項目文字可展開詳細防線與可替換清單）',
+          items: [
+            { id: 'wd-0800', time: '08:00', title: '床頭溫開水 200–300cc＋空腹活甲錠 1 顆（吃完可續躺）', cat: 'med', note: '【甲狀腺防線】藥師確認活甲錠與一般進食間隔 30–60 分鐘即可；不刷牙直接喝水吃藥無大礙，重點是坐起身配足量水防卡食道。' },
+            { id: 'wd-0840', time: '08:40', title: '起床刷牙、換衣服準備出門', cat: 'life', note: '【晨間節奏】08:00 吃藥後有 40 分鐘床上自由時間，減輕起床壓力。' },
+            { id: 'wd-0900', time: '09:00', title: '【第一餐】綠拿鐵（非高鈣無糖豆漿）＋水煮蛋 1–2 顆', cat: 'smoothie', note: '【進食開始】距離 08:00 活甲錠已滿 60 分鐘；十字花科蔬菜必燙熟。常買 4 款無加糖非高鈣豆漿／黑豆漿皆適用（義美古早傳統豆奶、統一陽光黃金豆、光泉無加糖黑豆漿、義美無加糖黑豆奶），確認不干擾活甲錠。' },
+            { id: 'wd-0930', time: '09:30', title: '常溫水吃益生菌，隔 3–5 分依心情喝溫熱茶或無咖啡因飲；泡隔夜燕麥冰冰箱', cat: 'diet', note: '【可依心情替換清單】①想微提神（無糖）：熱綠茶（70–80°C 不刮胃）／無糖薑汁紅茶（暖身喚醒代謝），茶包每次泡 2–3 分鐘即撈出，上午回沖 1–2 次後丟棄。②不想喝茶與咖啡（零咖啡因）：無糖南非國寶茶（博士茶）、無糖洋甘菊茶、無糖麥茶／黑豆茶／蕎麥茶、純薑片熱水，或常溫無糖氣泡水＋幾滴檸檬汁或薄荷葉。③桌上同步放白開水交替喝，勿等到 14:00 才開始喝水；嚴禁柚子茶、葡萄柚風味飲品與含糖飲料。' },
+            { id: 'wd-1200', time: '12:00', title: '備餐任務：奇亞籽泡常溫水 15–30 分鐘成凝膠狀', cat: 'diet', note: '【控糖準備】預先浸泡讓膳食纖維充分膨脹（若下午蛋白粉已加奇亞籽，中午可省略此步驟）。' },
+            { id: 'wd-1230', time: '12:30', title: '餐前控糖飲：奇亞籽＋蘋果醋＋氣泡水', cat: 'diet', note: '【血糖與血壓防線】延緩胃排空、穩餐後血糖，並與 13:35 血壓藥拉開 1 小時距離。' },
+            { id: 'wd-1300', time: '13:00', title: '【第二餐】4321 餐盤（2份熟蔬菜＋1份蛋白質＋1份未精緻澱粉）', cat: 'diet', note: '【主餐防線】白飯減半、蔬菜瀝乾湯汁；冷凍餐盒確認鈉含量低於 600–800mg 並補足硬體質蔬菜。' },
+            { id: 'wd-1335', time: '13:35', title: '飯後用藥與保健品：愛平諾＋脈優＋高濃度魚油＋維生素 D3（視需要加 Q10）', cat: 'med', note: '【心血管防線】魚油大顆務必分次吞服防噎；跟隨午餐油脂吸收最佳。若無肌肉痠痛可不預先補還原型 Q10。' },
+            { id: 'wd-1400', time: '14:00', title: '下午補水時段：專心喝白開水，或依心情改喝無咖啡因風味飲', cat: 'diet', note: '【停用冷泡茶・補水防線】以純白開水為主（累計達每日 2,500cc，避免傍晚猛灌致夜尿）。若想喝有味道的飲品，可依心情替換無咖啡因、無單寧酸清單（博士茶、洋甘菊茶、麥茶／黑豆茶／蕎麥茶、純薑片熱水、常溫無糖氣泡水＋檸檬／薄荷葉），不干擾補鐵；嚴禁柚子與葡萄柚風味飲品。' },
+            { id: 'wd-1700', time: '17:00', title: '【第三餐】含鐵膠原粉＋水果＋高蛋白輕食＋好油', cat: 'diet', note: '【進食窗口結束】搭配非高鈣豆漿、毛豆或水煮蛋可直接 17:00 一起補鐵（吃優格沙拉日若行有餘力再提早至 16:00 補鐵）。高蛋白輕食輪替：搖搖沙拉（水煮鮪魚半罐擠乾去鈉＋無糖希臘優格＋小黃瓜，禁海苔改美生菜包）／隔夜燕麥＋蛋／好喝版乳清豆漿＋堅果／毛豆仁＋蛋。冬天豆漿版隔夜燕麥可中火微波 1–1.5 分鐘熱吃，優格版不微波改提前回溫。' },
+            { id: 'wd-1950', time: '19:50', title: '運動課程（19:50–20:50）：1 小時低衝擊有氧或肌力', cat: 'sport', note: '【安全守則】微喘能說短句、嚴禁憋氣防血壓飆升、忽略心率錶。' },
+            { id: 'wd-2110', time: '21:10', title: '返家補水＋輕肌力＋靜態伸展（各 10–15 分）', cat: 'sport', note: '【練後收操與肌肉防線】21:10 到家先喝幾口白開水（17:00 後僅喝白開水），趁身體暖熱做 10–15 分鐘中低強度輕肌力（當天太累可直接跳過），再接 10–15 分鐘靜態伸展讓心跳與血壓平穩後再洗澡；嚴禁憋氣、分段慢起身。' },
+            { id: 'wd-2140', time: '21:40', title: '洗澡、排便、日常保養＋順便刷牙（22:35 前完成）', cat: 'life', note: '【體溫防線】保留近 1.5 小時讓核心體溫自然下降助眠；順便刷牙後即可直接上床。' },
+            { id: 'wd-2235', time: '22:35', title: '睡前服藥：脈優 1 顆＋脂瑞妥 1 顆（配 100–200cc 溫開水）', cat: 'med', note: '【夜間防護】長效型藥物提前吃不影響藥效，吃完直接躺床防漏吃！' },
+            { id: 'wd-2240', time: '22:40', title: '床上自由放鬆時間（22:40–24:00）', cat: 'life', note: '【副交感接手】安心滑手機、放空，不用再下床。' },
+            { id: 'wd-2400', time: '24:00', title: '戴妥正壓呼吸器 (CPAP) 就寢', cat: 'life', note: '【深層睡眠】直接入睡，維持 7–8 小時睡眠。' }
+          ]
+        },
+        saturday: {
+          label: '週六放鬆版',
+          hint: '週六進食窗口：12:00 – 20:00（含每週一次放鬆餐＋體重腰圍量測）',
+          items: [
+            { id: 'sat-0800', time: '08:00', title: '吞服 1 顆活甲錠配床頭溫開水 300cc（吃完可續躺）', cat: 'med', note: '【甲狀腺防線】週末也準時吃，吃完可續躺。' },
+            { id: 'sat-1000', time: '10:00', title: '起床喝溫開水 300–500cc，上完廁所量體重、腰圍（每週一次）', cat: 'life', note: '【追蹤防線】固定在放鬆餐之前量，數字才準；看長期趨勢不看單日。' },
+            { id: 'sat-1030', time: '10:30', title: '先吃益生菌，隔 3–5 分鐘後喝黑咖啡', cat: 'med', note: '【腸胃防線】黑咖啡不破斷食；益生菌先配常溫水吞服保護活性。' },
+            { id: 'sat-1130', time: '11:30', title: '早餐店外帶（12:00 準時開吃）', cat: 'diet', note: '【備餐】早餐店中午前常打烊，提早買好 12:00 準時進食。' },
+            { id: 'sat-1200', time: '12:00', title: '第一餐：早餐店（本週唯一放鬆餐），配魚油、維生素 D3（／還原型 Q10）', cat: 'diet', note: '【進食開始】一週只放鬆這一餐，保健品隨油脂餐點吸收最好。' },
+            { id: 'sat-1335', time: '13:35', title: '服用愛平諾 1 顆＋脈優 1 顆', cat: 'med', note: '【血壓防線】降壓藥時間和平日相同，不因週末改變。' },
+            { id: 'sat-1500', time: '15:00', title: '肌力訓練或快走 45–60 分鐘（15:00–16:00）', cat: 'sport', note: '【肌肉防線】週六運動時段，嚴禁憋氣，起身要慢防暈眩。' },
+            { id: 'sat-1630', time: '16:30', title: '含鐵膠原粉泡水', cat: 'med', note: '【補鐵】獨立泡水喝，遠離早晨活甲錠與中午保健品。' },
+            { id: 'sat-1900', time: '19:00', title: '第二餐：綠拿鐵＋2 顆水煮蛋（或加 1 匙乳清蛋白，20:00 前吃完）', cat: 'smoothie', note: '【進食結束】晚餐用高蛋白輕食拉回平衡，20:00 前吃完。' },
+            { id: 'sat-2200', time: '22:00', title: '洗澡排便與日常保養', cat: 'life', note: '【體溫防線】讓核心體溫慢慢下降助眠。' },
+            { id: 'sat-2300', time: '23:00', title: '睡前放鬆伸展（10–15 分鐘靜態拉筋）', cat: 'sport', note: '【神經防線】不流汗的靜態伸展幫助放鬆。' },
+            { id: 'sat-2330', time: '23:30', title: '睡前服藥（脈優＋脂瑞妥）', cat: 'med', note: '【夜間防護】控制清晨血壓，夜間發揮降血脂藥效。' },
+            { id: 'sat-2400', time: '24:00', title: '刷牙喝溫水 100–200cc，戴 CPAP 就寢', cat: 'life', note: '【作息防線】週六不晚睡，週日 08:00 才起得來。' }
+          ]
+        },
+        sunday: {
+          label: '週日備餐版',
+          hint: '週日進食窗口：12:00 – 20:00（逛市場累積步數＋煮下週便當）',
+          items: [
+            { id: 'sun-0800', time: '08:00', title: '吞服 1 顆活甲錠喝溫開水 300cc', cat: 'med', note: '【甲狀腺防線】只配白開水空腹服用。' },
+            { id: 'sun-0900', time: '09:00', title: '逛市場買菜（09:00–11:00），帶水壺', cat: 'sport', note: '【活動量】走路也是運動，週末的步數從這裡累積。' },
+            { id: 'sun-0930', time: '09:30', title: '先吃益生菌，隔 3–5 分鐘後喝黑咖啡', cat: 'med', note: '【腸胃防線】黑咖啡不破斷食。' },
+            { id: 'sun-1130', time: '11:30', title: '打綠拿鐵（蔬菜完全燙熟，水果 1 份＋藍莓）', cat: 'smoothie', note: '【甲狀腺防線】十字花科蔬菜完全燙熟，水果控制在 1 份。' },
+            { id: 'sun-1200', time: '12:00', title: '第一餐：綠拿鐵＋2 顆水煮蛋（或半碗毛豆），配魚油、D3（／Q10）', cat: 'smoothie', note: '【進食開始】補夠蛋白質下午才不餓，脂溶性保健品隨餐吃。' },
+            { id: 'sun-1335', time: '13:35', title: '服用愛平諾 1 顆＋脈優 1 顆', cat: 'med', note: '【血壓防線】降壓藥時間和平日相同。' },
+            { id: 'sun-1400', time: '14:00', title: '居家肌力訓練 30–40 分鐘（14:00–15:00）', cat: 'sport', note: '【肌肉防線】下廚前做完，嚴禁憋氣、起身要慢。' },
+            { id: 'sun-1545', time: '15:45', title: '含鐵膠原粉＋高蛋白輕食（防偷吃）', cat: 'med', note: '【防偷吃與補鐵】搭配非高鈣無糖豆漿、毛豆或水煮蛋可直接併餐補鐵（吃優格沙拉日若行有餘力可先補鐵）。高蛋白輕食輪替：搖搖沙拉／隔夜燕麥＋蛋／好喝版乳清豆漿／毛豆蛋；冬天豆漿版隔夜燕麥可中火微波 1–1.5 分鐘熱吃，優格版不微波改提前回溫。' },
+            { id: 'sun-1600', time: '16:00', title: '煮下週便當（16:00–18:00，主食肉類冷凍、蔬菜分批）', cat: 'diet', note: '【雙軌新鮮備餐】主食與蛋白質冷凍 5 天份，蔬菜先煮週一至週三份，調味比平常淡。' },
+            { id: 'sun-1830', time: '18:30', title: '第二餐：4321 餐盤（20:00 前吃完）', cat: 'diet', note: '【進食結束】吃自己剛煮好的新鮮菜色，20:00 前吃完。' },
+            { id: 'sun-2200', time: '22:00', title: '洗澡排便與日常保養', cat: 'life', note: '【體溫防線】保留睡前體溫降溫緩衝。' },
+            { id: 'sun-2300', time: '23:00', title: '睡前放鬆伸展（10–15 分鐘靜態拉筋）', cat: 'sport', note: '【神經防線】靜態伸展舒緩下廚與肌力後的緊繃。' },
+            { id: 'sun-2330', time: '23:30', title: '睡前服藥（脈優＋脂瑞妥）', cat: 'med', note: '【夜間防護】穩定清晨血壓與夜間血脂。' },
+            { id: 'sun-2400', time: '24:00', title: '刷牙喝溫水 100–200cc，戴 CPAP 就寢', cat: 'life', note: '【防護網】為週一的作息做準備。' }
+          ]
+        }
+      };
+
+      // 體組成 14 項定義（lowerBetter: true 代表下降為好事→顯示若竹綠，上升顯示珊瑚粉）
+      const BODY_COMP_FIELDS = [
+        { key: 'weight', label: '體重', unit: 'kg', step: '0.1', lowerBetter: true },
+        { key: 'bodyFat', label: '體脂率', unit: '%', step: '0.1', lowerBetter: true },
+        { key: 'bodyAge', label: '體年齡', unit: '歲', step: '1', lowerBetter: true },
+        { key: 'bmi', label: 'BMI', unit: '', step: '0.1', lowerBetter: true },
+        { key: 'bmr', label: '基礎代謝', unit: 'kcal', step: '1', lowerBetter: false },
+        { key: 'visceralFat', label: '內臟脂肪', unit: '級', step: '0.5', lowerBetter: true },
+        { key: 'wholeFat', label: '全身-脂肪比', unit: '%', step: '0.1', lowerBetter: true },
+        { key: 'wholeMuscle', label: '全身-肌肉比', unit: '%', step: '0.1', lowerBetter: false },
+        { key: 'trunkFat', label: '軀幹-脂肪比', unit: '%', step: '0.1', lowerBetter: true },
+        { key: 'trunkMuscle', label: '軀幹-肌肉比', unit: '%', step: '0.1', lowerBetter: false },
+        { key: 'legsFat', label: '雙腿-脂肪比', unit: '%', step: '0.1', lowerBetter: true },
+        { key: 'legsMuscle', label: '雙腿-肌肉比', unit: '%', step: '0.1', lowerBetter: false },
+        { key: 'armsFat', label: '雙手-脂肪比', unit: '%', step: '0.1', lowerBetter: true },
+        { key: 'armsMuscle', label: '雙手-肌肉比', unit: '%', step: '0.1', lowerBetter: false }
+      ];
+
+      // 身體尺寸 7 項定義
+      const BODY_MEASURE_FIELDS = [
+        { key: 'upperChest', label: '上胸圍', unit: 'cm', step: '0.1', lowerBetter: true },
+        { key: 'underChest', label: '下胸圍', unit: 'cm', step: '0.1', lowerBetter: true },
+        { key: 'waist', label: '腰圍', unit: 'cm', step: '0.1', lowerBetter: true },
+        { key: 'hip', label: '臀圍', unit: 'cm', step: '0.1', lowerBetter: true },
+        { key: 'rightThigh', label: '右大腿圍', unit: 'cm', step: '0.1', lowerBetter: true },
+        { key: 'rightCalf', label: '右小腿圍', unit: 'cm', step: '0.1', lowerBetter: true },
+        { key: 'rightArm', label: '右上臂圍', unit: 'cm', step: '0.1', lowerBetter: true }
+      ];
+
+      const ALL_GOAL_FIELDS = [...BODY_COMP_FIELDS, ...BODY_MEASURE_FIELDS];
+
+      const EXERCISE_OPTIONS = ['有氧課', '快走', '居家肌力', '伸展', '水中漫步', '室內腳踏車', '逛市場散步', '今日休息'];
+      const SYMPTOM_OPTIONS = ['精神佳', '輕微疲倦', '水腫', '雙側肌肉痠痛', '頭暈', '腸胃不適', '口乾'];
+      const MOODS = [
+        { id: 'great', label: '超棒' },
+        { id: 'calm', label: '平靜' },
+        { id: 'normal', label: '普通' },
+        { id: 'tired', label: '疲憊' },
+        { id: 'annoyed', label: '煩悶' }
+      ];
+
+      const DIET_PHOTO_TAGS = ['早餐綠拿鐵', '午餐4321', '下午點心', '晚餐', '放鬆餐', '飲品'];
+      const BODY_PHOTO_TAGS = ['正面', '側面', '背面'];
+
+      const ACCOUNT_TYPES = {
+        expense: { label: '現金／支出', bgClass: 'bg-coral' },
+        income: { label: '銀行／收入', bgClass: 'bg-green' },
+        credit: { label: '信用卡', bgClass: 'bg-yellow' },
+        epay: { label: '電子支付', bgClass: 'bg-blue' }
+      };
+
+      const EXPENSE_CATS = ['飲食', '保健品', '運動', '日用', '醫療', '交通', '其他'];
+      const INCOME_CATS = ['薪資', '獎金', '回饋', '退款', '副業', '其他收入'];
+
+      // -----------------------------------------------------------------------
+      // 預設狀態與資料初始化
+      // -----------------------------------------------------------------------
+      function getDefaultState() {
+        return {
+          days: {},
+          goals: {
+            weight: '83',
+            waist: '85'
+          },
+          accounts: [
+            { id: 'acc-cash', name: '現金錢包', type: 'expense', initialBalance: 3000 },
+            { id: 'acc-bank', name: '薪資帳戶', type: 'income', initialBalance: 50000 },
+            { id: 'acc-card', name: '常用信用卡', type: 'credit', initialBalance: 0 },
+            { id: 'acc-line', name: 'LINE Pay', type: 'epay', initialBalance: 2000 }
+          ],
+          quickButtons: [
+            { id: 'qb-1', name: '午餐餐盒', amount: 120, type: 'expense', category: '飲食', accountId: 'acc-line' },
+            { id: 'qb-2', name: '無糖豆漿', amount: 35, type: 'expense', category: '飲食', accountId: 'acc-cash' },
+            { id: 'qb-3', name: '綠拿鐵食材', amount: 80, type: 'expense', category: '飲食', accountId: 'acc-cash' },
+            { id: 'qb-4', name: '運動課', amount: 300, type: 'expense', category: '運動', accountId: 'acc-card' },
+            { id: 'qb-5', name: '水煮蛋毛豆', amount: 55, type: 'expense', category: '飲食', accountId: 'acc-line' }
+          ]
+        };
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return getDefaultState();
+          const parsed = JSON.parse(raw);
+          const def = getDefaultState();
+          return {
+            days: parsed.days && typeof parsed.days === 'object' ? parsed.days : {},
+            goals: parsed.goals && typeof parsed.goals === 'object' ? parsed.goals : def.goals,
+            accounts: Array.isArray(parsed.accounts) && parsed.accounts.length ? parsed.accounts : def.accounts,
+            quickButtons: Array.isArray(parsed.quickButtons) ? parsed.quickButtons : def.quickButtons
+          };
+        } catch (e) {
+          return getDefaultState();
+        }
+      }
+
+      let appState = loadState();
+      let currentDateStr = getTodayStr();
+      let activeTab = 'schedule';
+      let expandedTaskIds = new Set();
+      let scheduleShowAll = false;
+      const collapsedSections = {
+        water: false,
+        bpWeight: true,
+        exercise: true,
+        mood: true,
+        trendChart: false,
+        bodyComp: true,
+        bodyMeasure: true
+      };
+      let chartRange = 7;
+      let chartMetric = 'weight';
+      let photoSubTab = 'diet';
+      let photoScope = 'day';
+      let txFormType = 'expense';
+      let accountFilterId = '';
+      let currentLightboxPhotoId = null;
+      let allPhotosCache = [];
+      let toastTimer = null;
+
+      function saveState(showToastFlag = true) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+          if (showToastFlag) triggerSaveToast('已儲存');
+        } catch (e) {
+          showAlert('本機儲存空間不足，請先匯出 JSON 備份。');
+        }
+      }
+
+      function getDayRecord(dateStr) {
+        if (!appState.days[dateStr]) {
+          appState.days[dateStr] = {
+            scheduleOverride: null,
+            checkedTasks: {},
+            waterMl: 0,
+            bpSys: '',
+            bpDia: '',
+            bpPulse: '',
+            exerciseTags: [],
+            exerciseDuration: '',
+            exerciseNotes: '',
+            mood: '',
+            symptoms: [],
+            dailyNotes: '',
+            body: {},
+            transactions: []
+          };
+        }
+        const rec = appState.days[dateStr];
+        if (!rec.body) rec.body = {};
+        if (!Array.isArray(rec.transactions)) rec.transactions = [];
+        if (!Array.isArray(rec.exerciseTags)) rec.exerciseTags = [];
+        if (!Array.isArray(rec.symptoms)) rec.symptoms = [];
+        if (!rec.checkedTasks) rec.checkedTasks = {};
+        return rec;
+      }
+
+      // -----------------------------------------------------------------------
+      // IndexedDB 照片儲存與 Canvas 壓縮
+      // -----------------------------------------------------------------------
+      function openPhotosDB() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(IDB_NAME, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(IDB_STORE)) {
+              db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async function idbGetAllPhotos() {
+        try {
+          const db = await openPhotosDB();
+          return await new Promise((resolve, reject) => {
+            const tx = db.transaction(IDB_STORE, 'readonly');
+            const store = tx.objectStore(IDB_STORE);
+            const req = store.getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror = () => reject(req.error);
+          });
+        } catch (e) {
+          return [];
+        }
+      }
+
+      async function idbAddPhoto(photoObj) {
+        const db = await openPhotosDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).put(photoObj);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+
+      async function idbDeletePhoto(id) {
+        const db = await openPhotosDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).delete(id);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+
+      async function idbClearAllPhotos() {
+        const db = await openPhotosDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).clear();
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+
+      function compressImageFile(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error('讀取圖片失敗'));
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onerror = () => reject(new Error('載入圖片失敗'));
+            img.onload = () => {
+              const maxW = 720;
+              let w = img.width;
+              let h = img.height;
+              if (w > maxW) {
+                h = Math.round(h * (maxW / w));
+                w = maxW;
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#FFFCF6';
+              ctx.fillRect(0, 0, w, h);
+              ctx.drawImage(img, 0, 0, w, h);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+              resolve(dataUrl);
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // -----------------------------------------------------------------------
+      // 日期與工具函式
+      // -----------------------------------------------------------------------
+      function getTodayStr() {
+        return formatDateStr(new Date());
+      }
+
+      function formatDateStr(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function parseDateStr(str) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function shiftDate(str, days) {
+        const dt = parseDateStr(str);
+        dt.setDate(dt.getDate() + days);
+        return formatDateStr(dt);
+      }
+
+      function getAutoScheduleType(dateStr) {
+        const day = parseDateStr(dateStr).getDay();
+        if (day === 6) return 'saturday';
+        if (day === 0) return 'sunday';
+        return 'weekday';
+      }
+
+      function getEffectiveScheduleType(dateStr) {
+        const rec = getDayRecord(dateStr);
+        return rec.scheduleOverride || getAutoScheduleType(dateStr);
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function toNum(v) {
+        if (v === '' || v === null || v === undefined) return null;
+        const n = Number(v);
+        return isNaN(n) ? null : n;
+      }
+
+      function formatSigned(num, unit = '', decimals = 1) {
+        if (num === null || isNaN(num)) return '—';
+        if (Math.abs(num) < 0.005) return '— 持平';
+        const arrow = num > 0 ? '▲ +' : '▼ ';
+        return `${arrow}${num.toFixed(decimals)}${unit ? ' ' + unit : ''}`;
+      }
+
+      function getDeltaBadgeColor(diff, lowerBetter) {
+        if (diff === null || Math.abs(diff) < 0.005) return 'bg-paper';
+        const isGood = lowerBetter ? diff < 0 : diff > 0;
+        return isGood ? 'bg-green' : 'bg-coral';
+      }
+
+      function getMetricValue(dayRec, key) {
+        if (!dayRec || !dayRec.body) return null;
+        if (key === 'fatMass') {
+          const w = toNum(dayRec.body.weight);
+          const f = toNum(dayRec.body.bodyFat);
+          if (w !== null && f !== null) return Number(((w * f) / 100).toFixed(2));
+          return null;
+        }
+        if (key === 'leanIndex') {
+          const w = toNum(dayRec.body.weight);
+          const bmr = toNum(dayRec.body.bmr);
+          if (w !== null && w > 0 && bmr !== null) return Number((bmr / w).toFixed(2));
+          return null;
+        }
+        return toNum(dayRec.body[key]);
+      }
+
+      function getPreviousMetric(dateStr, key) {
+        const sortedDates = Object.keys(appState.days).filter(d => d < dateStr).sort().reverse();
+        for (const d of sortedDates) {
+          const val = getMetricValue(appState.days[d], key);
+          if (val !== null) return { date: d, value: val };
+        }
+        return null;
+      }
+
+      function getEarliestMetric(key) {
+        const sortedDates = Object.keys(appState.days).sort();
+        for (const d of sortedDates) {
+          const val = getMetricValue(appState.days[d], key);
+          if (val !== null) return { date: d, value: val };
+        }
+        return null;
+      }
+
+      function getMetricHistory(key) {
+        return Object.keys(appState.days)
+          .sort()
+          .map(d => ({ date: d, value: getMetricValue(appState.days[d], key) }))
+          .filter(item => item.value !== null);
+      }
+
+      // -----------------------------------------------------------------------
+      // 自訂提示 / 確認彈窗
+      // -----------------------------------------------------------------------
+      function showAlert(msg) {
+        const modal = document.getElementById('dialogModal');
+        document.getElementById('dialogText').textContent = msg;
+        const btns = document.getElementById('dialogButtons');
+        btns.innerHTML = `<button type="button" id="dlgOk" class="ehon-btn px-6 py-2 text-sm bg-yellow">知道了</button>`;
+        btns.querySelector('#dlgOk').addEventListener('click', () => modal.classList.remove('open'));
+        modal.classList.add('open');
+      }
+
+      function showConfirm(msg, onConfirm) {
+        const modal = document.getElementById('dialogModal');
+        document.getElementById('dialogText').textContent = msg;
+        const btns = document.getElementById('dialogButtons');
+        btns.innerHTML = `
+          <button type="button" id="dlgCancel" class="ehon-btn px-5 py-2 text-sm bg-paper">取消</button>
+          <button type="button" id="dlgYes" class="ehon-btn px-5 py-2 text-sm bg-coral">確定</button>
+        `;
+        btns.querySelector('#dlgCancel').addEventListener('click', () => modal.classList.remove('open'));
+        btns.querySelector('#dlgYes').addEventListener('click', () => {
+          modal.classList.remove('open');
+          onConfirm();
+        });
+        modal.classList.add('open');
+      }
+
+      function triggerSaveToast(msg = '已儲存') {
+        const toast = document.getElementById('saveToast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 1400);
+      }
+
+      function triggerDateBounce() {
+        if (document.body.classList.contains('reduce-motion')) return;
+        const mainEl = document.getElementById('journalMain');
+        mainEl.classList.remove('anim-date-bounce');
+        void mainEl.offsetWidth;
+        mainEl.classList.add('anim-date-bounce');
+      }
+
+      function syncCollapsibleUI() {
+        Object.keys(collapsedSections).forEach(key => {
+          const isCollapsed = collapsedSections[key];
+          const bodyEl = document.querySelector(`[data-body="${key}"]`);
+          const arrowEl = document.querySelector(`[data-arrow="${key}"]`);
+          if (bodyEl) bodyEl.classList.toggle('hidden', isCollapsed);
+          if (arrowEl) arrowEl.classList.toggle('rotate-180', !isCollapsed);
+        });
+      }
+
+      function timeStrToMins(tStr) {
+        const [h, m] = String(tStr || '00:00').split(':').map(Number);
+        return (h || 0) * 60 + (m || 0);
+      }
+
+      function getFocusedScheduleItems(items) {
+        if (items.length <= 3) return items;
+        const now = new Date();
+        const nowMins = now.getHours() * 60 + now.getMinutes();
+        let nextIdx = items.findIndex(it => timeStrToMins(it.time) >= nowMins);
+        if (nextIdx === -1) nextIdx = items.length - 1;
+
+        let start = nextIdx - 1;
+        let end = nextIdx + 1;
+        if (start < 0) {
+          start = 0;
+          end = 2;
+        } else if (end >= items.length) {
+          end = items.length - 1;
+          start = items.length - 3;
+        }
+        return items.slice(start, end + 1);
+      }
+
+      // -----------------------------------------------------------------------
+      // 原創 SVG 插圖產生器
+      // -----------------------------------------------------------------------
+      function getMascotSVG(scheduleType) {
+        const cloudColor = scheduleType === 'saturday' ? '#F6D27A' : (scheduleType === 'sunday' ? '#A8D3E6' : '#B9DAA5');
+        return `
+          <svg class="anim-float" width="46" height="46" viewBox="0 0 56 56" fill="none">
+            <circle cx="38" cy="17" r="9.5" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.8"/>
+            <path d="M12 43H41C45.5 43 49 39.6 49 35.3C49 31.3 45.9 28.2 42 28C40.8 23 36.3 19.5 31 19.5C26.2 19.5 22.1 22.5 20.5 26.8C19.8 26.6 19 26.5 18.2 26.5C13.6 26.5 10 30.1 10 34.7C10 39.3 10.6 43 12 43Z" fill="${cloudColor}" stroke="#3E3A39" stroke-width="2.8" stroke-linejoin="round"/>
+            <circle cx="24" cy="33" r="1.6" fill="#3E3A39"/>
+            <circle cx="34" cy="33" r="1.6" fill="#3E3A39"/>
+            <circle cx="20.5" cy="36" r="2" fill="#F2A497"/>
+            <circle cx="37.5" cy="36" r="2" fill="#F2A497"/>
+            <path d="M26.5 36.2C27.8 37.8 30.2 37.8 31.5 36.2" stroke="#3E3A39" stroke-width="2.3" stroke-linecap="round"/>
+          </svg>`;
+      }
+
+      function getCategoryMiniSVG(cat) {
+        if (cat === 'med') {
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="16" height="8" rx="4" transform="rotate(-30 4 8)" fill="#F2A497" stroke="#3E3A39" stroke-width="2.2"/><path d="M11 7.5L14.5 13.5" stroke="#3E3A39" stroke-width="2.2"/></svg>`;
+        }
+        if (cat === 'smoothie') {
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 9H17L15.5 20H8.5L7 9Z" fill="#B9DAA5" stroke="#3E3A39" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 9L14.5 4" stroke="#3E3A39" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+        }
+        if (cat === 'diet') {
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="7" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.2"/><path d="M9 13H15" stroke="#3E3A39" stroke-width="2" stroke-linecap="round"/></svg>`;
+        }
+        if (cat === 'sport') {
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="4" height="8" rx="1.5" fill="#B9DAA5" stroke="#3E3A39" stroke-width="2"/><rect x="17" y="8" width="4" height="8" rx="1.5" fill="#B9DAA5" stroke="#3E3A39" stroke-width="2"/><path d="M7 12H17" stroke="#3E3A39" stroke-width="2.5"/></svg>`;
+        }
+        return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7.5" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2.2"/><path d="M12 8V12L14.5 14" stroke="#3E3A39" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+      }
+
+      function getCategoryBgClass(cat) {
+        if (cat === 'med') return 'bg-coral';
+        if (cat === 'smoothie' || cat === 'sport') return 'bg-green';
+        if (cat === 'diet') return 'bg-yellow';
+        return 'bg-blue';
+      }
+
+      function getMoodSVG(moodId) {
+        const fills = { great: '#F6D27A', calm: '#B9DAA5', normal: '#A8D3E6', tired: '#FFF7EA', annoyed: '#F2A497' };
+        const fill = fills[moodId] || '#FFFCF6';
+        let face = '';
+        if (moodId === 'great') {
+          face = `<path d="M11 16C12 14.5 13.5 14.5 14.5 16M21.5 16C22.5 14.5 24 14.5 25 16" stroke="#3E3A39" stroke-width="2.3" stroke-linecap="round"/><path d="M13.5 21.5C15.5 24.5 20.5 24.5 22.5 21.5" stroke="#3E3A39" stroke-width="2.4" stroke-linecap="round"/>`;
+        } else if (moodId === 'calm') {
+          face = `<circle cx="13" cy="16" r="1.6" fill="#3E3A39"/><circle cx="23" cy="16" r="1.6" fill="#3E3A39"/><path d="M14.5 22C16.5 23.5 19.5 23.5 21.5 22" stroke="#3E3A39" stroke-width="2.3" stroke-linecap="round"/>`;
+        } else if (moodId === 'normal') {
+          face = `<circle cx="13" cy="16" r="1.6" fill="#3E3A39"/><circle cx="23" cy="16" r="1.6" fill="#3E3A39"/><path d="M14.5 22.5H21.5" stroke="#3E3A39" stroke-width="2.3" stroke-linecap="round"/>`;
+        } else if (moodId === 'tired') {
+          face = `<path d="M11 16.5H15M21 16.5H25" stroke="#3E3A39" stroke-width="2.3" stroke-linecap="round"/><path d="M14.5 23C16.5 21.5 19.5 21.5 21.5 23" stroke="#3E3A39" stroke-width="2.3" stroke-linecap="round"/>`;
+        } else {
+          face = `<path d="M11.5 14.5L15 16.5M24.5 14.5L21 16.5" stroke="#3E3A39" stroke-width="2.3" stroke-linecap="round"/><path d="M14 23.5C16 21 20 21 22 23.5" stroke="#3E3A39" stroke-width="2.3" stroke-linecap="round"/>`;
+        }
+        return `<svg width="34" height="34" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="14" fill="${fill}" stroke="#3E3A39" stroke-width="2.6"/>${face}</svg>`;
+      }
+
+      // -----------------------------------------------------------------------
+      // 渲染：頂部日期列
+      // -----------------------------------------------------------------------
+      function renderHeader() {
+        const dt = parseDateStr(currentDateStr);
+        const y = dt.getFullYear();
+        const m = dt.getMonth() + 1;
+        const d = dt.getDate();
+        const wd = WEEKDAY_NAMES[dt.getDay()];
+        document.getElementById('dateDisplayText').textContent = `${y}/${m}/${d}（${wd}）`;
+        document.getElementById('nativeDatePicker').value = currentDateStr;
+
+        const scheduleType = getEffectiveScheduleType(currentDateStr);
+        document.getElementById('scheduleTypeBadge').textContent = `${SCHEDULE_TEMPLATES[scheduleType].label} ↻`;
+        document.getElementById('mascotContainer').innerHTML = getMascotSVG(scheduleType);
+      }
+
+      // -----------------------------------------------------------------------
+      // 渲染：分頁一「今日作息」
+      // -----------------------------------------------------------------------
+      function renderScheduleTab() {
+        const rec = getDayRecord(currentDateStr);
+        const scheduleType = getEffectiveScheduleType(currentDateStr);
+        const tpl = SCHEDULE_TEMPLATES[scheduleType];
+
+        const water = Math.max(0, Number(rec.waterMl) || 0);
+        document.getElementById('waterAmountText').textContent = water.toLocaleString();
+        document.getElementById('waterSummaryBadge').textContent = `${water.toLocaleString()} / 2,500cc`;
+        const waterGoalBadge = document.getElementById('waterGoalBadge');
+        if (water >= 2500) {
+          waterGoalBadge.textContent = '🎉 飲水達標！';
+          waterGoalBadge.classList.add('bg-green');
+          waterGoalBadge.classList.remove('bg-paper');
+        } else {
+          waterGoalBadge.textContent = '目標 2,500cc';
+          waterGoalBadge.classList.remove('bg-green');
+          waterGoalBadge.classList.add('bg-paper');
+        }
+        const pct = Math.min(1, water / 2500);
+        const maxFillH = 47;
+        const fillH = Math.round(pct * maxFillH);
+        const yPos = 63 - fillH;
+        document.getElementById('waterSvgRect').setAttribute('y', yPos);
+        document.getElementById('waterSvgRect').setAttribute('height', fillH);
+        document.getElementById('waterSvgLine').setAttribute('y1', yPos);
+        document.getElementById('waterSvgLine').setAttribute('y2', yPos);
+
+        document.getElementById('bpSys').value = rec.bpSys || '';
+        document.getElementById('bpDia').value = rec.bpDia || '';
+        document.getElementById('bpPulse').value = rec.bpPulse || '';
+        updateBpAlert(rec.bpSys);
+
+        const curW = getMetricValue(rec, 'weight');
+        const prevW = getPreviousMetric(currentDateStr, 'weight');
+        document.getElementById('quickWeightInput').value = rec.body.weight !== undefined ? rec.body.weight : '';
+        const qDeltaEl = document.getElementById('quickWeightDelta');
+        if (curW !== null && prevW) {
+          const diff = curW - prevW.value;
+          qDeltaEl.textContent = formatSigned(diff, 'kg', 1);
+          qDeltaEl.className = `text-xs shrink-0 px-2 py-1 rounded-full border-2 border-[#3E3A39] ${getDeltaBadgeColor(diff, true)}`;
+        } else {
+          qDeltaEl.textContent = '—';
+          qDeltaEl.className = 'text-xs shrink-0 px-2 py-1 rounded-full border-2 border-[#3E3A39] bg-paper';
+        }
+
+        const bpParts = [];
+        if (rec.bpSys || rec.bpDia) bpParts.push(`血壓 ${rec.bpSys || '?'}/${rec.bpDia || '?'}`);
+        if (rec.bpPulse) bpParts.push(`心跳 ${rec.bpPulse}`);
+        if (curW !== null) bpParts.push(`體重 ${curW.toFixed(1)}kg`);
+        document.getElementById('bpWeightSummary').textContent = bpParts.length ? bpParts.join(' · ') : '點此填寫血壓與體重';
+
+        const totalCount = tpl.items.length;
+        const doneCount = tpl.items.filter(it => !!rec.checkedTasks[it.id]).length;
+        const pctTask = totalCount ? Math.round((doneCount / totalCount) * 100) : 0;
+
+        document.getElementById('progressCountText').textContent = `${doneCount} / ${totalCount}`;
+        document.getElementById('progressBarFill').style.width = `${pctTask}%`;
+        document.getElementById('scheduleWindowHint').textContent = tpl.hint;
+
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('currentClockBadge').textContent = `現在 ${hh}:${mm}`;
+
+        const modeBadge = document.getElementById('scheduleModeBadge');
+        const focusArrow = document.getElementById('scheduleFocusArrow');
+        if (scheduleShowAll) {
+          modeBadge.textContent = '全部項目 · 點標題切回聚焦';
+          modeBadge.classList.remove('bg-yellow');
+          modeBadge.classList.add('bg-blue');
+          focusArrow.classList.add('rotate-180');
+        } else {
+          modeBadge.textContent = '聚焦中 · 點標題看全部';
+          modeBadge.classList.add('bg-yellow');
+          modeBadge.classList.remove('bg-blue');
+          focusArrow.classList.remove('rotate-180');
+        }
+
+        const listEl = document.getElementById('scheduleListContainer');
+        let visibleItems = tpl.items;
+        if (!scheduleShowAll) {
+          const focused = getFocusedScheduleItems(tpl.items);
+          visibleItems = focused.filter(it => !rec.checkedTasks[it.id]);
+        }
+
+        if (visibleItems.length === 0) {
+          listEl.innerHTML = `
+            <div class="ehon-subcard p-4 text-center bg-green space-y-1">
+              <div class="text-base">🎉 目前時段的作息都已完成！</div>
+              <p class="text-xs opacity-85">點擊上方「今日作息與用藥防線」標題可展開檢視全部 ${totalCount} 項紀錄。</p>
+            </div>
+          `;
+        } else {
+          listEl.innerHTML = visibleItems.map(item => {
+            const isChecked = !!rec.checkedTasks[item.id];
+            const isExpanded = expandedTaskIds.has(item.id);
+            return `
+              <div class="ehon-subcard p-2.5 ${isChecked ? 'bg-cream' : 'bg-paper'}">
+                <div class="flex items-start gap-2.5">
+                  <button type="button" data-check-task="${item.id}" class="ehon-checkbox mt-0.5 ${isChecked ? 'checked' : ''}" aria-label="勾選 ${escapeHtml(item.title)}">
+                    ${isChecked ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12.5L10 17.5L19 7.5" stroke="#3E3A39" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}
+                  </button>
+                  <div class="flex-1 min-w-0 cursor-pointer" data-expand-task="${item.id}">
+                    <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border-2 border-[#3E3A39] text-[11px] ${getCategoryBgClass(item.cat)}">
+                        ${getCategoryMiniSVG(item.cat)}
+                        <span>${item.time}</span>
+                      </span>
+                      <span class="text-[10px] opacity-65">${isExpanded ? '收起備註 ▲' : '防線備註 ▼'}</span>
+                    </div>
+                    <div class="text-sm leading-snug ${isChecked ? 'task-done-title' : ''}">${escapeHtml(item.title)}</div>
+                    ${isExpanded ? `<div class="mt-2 p-2 rounded-xl border-2 border-[#3E3A39] bg-cream text-xs leading-relaxed">${escapeHtml(item.note)}</div>` : ''}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        const exContainer = document.getElementById('exerciseTagsContainer');
+        exContainer.innerHTML = EXERCISE_OPTIONS.map(opt => {
+          const active = rec.exerciseTags.includes(opt);
+          return `<button type="button" data-ex-tag="${opt}" class="ehon-pill px-3 py-1 text-xs ${active ? 'bg-green' : 'bg-paper'}">${opt}</button>`;
+        }).join('');
+        document.getElementById('exerciseDuration').value = rec.exerciseDuration || '';
+        document.getElementById('exerciseNotes').value = rec.exerciseNotes || '';
+        const exSumParts = [];
+        if (rec.exerciseTags.length) exSumParts.push(rec.exerciseTags.join('、'));
+        if (rec.exerciseDuration) exSumParts.push(`${rec.exerciseDuration} 分鐘`);
+        document.getElementById('exerciseSummary').textContent = exSumParts.length ? exSumParts.join(' · ') : '尚未紀錄 · 點此展開';
+
+        const moodContainer = document.getElementById('moodPickerContainer');
+        moodContainer.innerHTML = MOODS.map(m => {
+          const sel = rec.mood === m.id;
+          return `
+            <button type="button" data-mood="${m.id}" class="ehon-btn flex-col py-1.5 px-1 text-[11px] ${sel ? 'mood-selected' : 'bg-paper'}">
+              ${getMoodSVG(m.id)}
+              <span>${m.label}</span>
+            </button>
+          `;
+        }).join('');
+
+        const selMoodObj = MOODS.find(m => m.id === rec.mood);
+        document.getElementById('selectedMoodLabel').textContent = selMoodObj ? selMoodObj.label : '尚未選擇';
+
+        const sympContainer = document.getElementById('symptomsContainer');
+        sympContainer.innerHTML = SYMPTOM_OPTIONS.map(s => {
+          const active = rec.symptoms.includes(s);
+          const colorClass = s === '雙側肌肉痠痛' ? 'bg-coral' : 'bg-yellow';
+          return `<button type="button" data-symptom="${s}" class="ehon-pill px-2.5 py-1 text-xs ${active ? colorClass : 'bg-paper'}">${s}</button>`;
+        }).join('');
+
+        const moodSumParts = [];
+        if (selMoodObj) moodSumParts.push(`心情：${selMoodObj.label}`);
+        if (rec.symptoms.length) moodSumParts.push(rec.symptoms.join('、'));
+        document.getElementById('moodSummary').textContent = moodSumParts.length ? moodSumParts.join(' · ') : '尚未選擇 · 點此展開';
+
+        document.getElementById('muscleAlertBox').classList.toggle('hidden', !rec.symptoms.includes('雙側肌肉痠痛'));
+        document.getElementById('dailyNotes').value = rec.dailyNotes || '';
+
+        syncCollapsibleUI();
+      }
+
+      function updateBpAlert(sysVal) {
+        const n = toNum(sysVal);
+        document.getElementById('bpAlertBox').classList.toggle('hidden', !(n !== null && n >= 160));
+      }
+
+      // -----------------------------------------------------------------------
+      // 渲染：分頁二「體態數據」
+      // -----------------------------------------------------------------------
+      function renderBodyTab() {
+        const rec = getDayRecord(currentDateStr);
+
+        const curW = getMetricValue(rec, 'weight');
+        const prevW = getPreviousMetric(currentDateStr, 'weight');
+        const earliestW = getEarliestMetric('weight');
+        const goalW = toNum(appState.goals.weight);
+
+        document.getElementById('statTodayWeight').textContent = curW !== null ? curW.toFixed(1) : '—';
+        document.getElementById('trendSummaryLine').textContent = curW !== null
+          ? `當日體重 ${curW.toFixed(1)} kg${prevW ? ' (' + formatSigned(curW - prevW.value, 'kg', 1) + ')' : ''}`
+          : '點擊切換區間與指標檢視趨勢';
+
+        const prevEl = document.getElementById('statWeightDeltaPrev');
+        if (curW !== null && prevW) {
+          const diff = curW - prevW.value;
+          prevEl.innerHTML = `<span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] ${getDeltaBadgeColor(diff, true)}">${formatSigned(diff, 'kg', 1)}</span>`;
+        } else {
+          prevEl.textContent = '尚無前筆紀錄';
+        }
+
+        const totalEl = document.getElementById('statWeightDeltaTotal');
+        if (curW !== null && earliestW && earliestW.date !== currentDateStr) {
+          const diff = curW - earliestW.value;
+          totalEl.innerHTML = `<span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] ${getDeltaBadgeColor(diff, true)}">${formatSigned(diff, 'kg', 1)}</span>`;
+        } else {
+          totalEl.textContent = '尚無累計比較';
+        }
+
+        const goalEl = document.getElementById('statWeightToGoal');
+        if (goalW !== null) {
+          if (curW !== null) {
+            const diff = curW - goalW;
+            if (Math.abs(diff) < 0.05) {
+              goalEl.innerHTML = `<span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-green">🎉 已達標！</span>`;
+            } else {
+              goalEl.innerHTML = `<span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-yellow">距 ${goalW} 差 ${diff > 0 ? '+' : ''}${diff.toFixed(1)} kg</span>`;
+            }
+          } else {
+            goalEl.textContent = `目標 ${goalW} kg`;
+          }
+        } else {
+          goalEl.textContent = '未設定目標';
+        }
+
+        renderTrendChart();
+
+        const fatMass = getMetricValue(rec, 'fatMass');
+        const prevFatMass = getPreviousMetric(currentDateStr, 'fatMass');
+        document.getElementById('autoFatMassVal').textContent = fatMass !== null ? fatMass.toFixed(2) : '—';
+        const fatMassDeltaEl = document.getElementById('autoFatMassDelta');
+        if (fatMass !== null && prevFatMass) {
+          const d = fatMass - prevFatMass.value;
+          fatMassDeltaEl.innerHTML = `<span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] ${getDeltaBadgeColor(d, true)}">${formatSigned(d, 'kg', 2)}</span>`;
+        } else {
+          fatMassDeltaEl.textContent = '輸入體重與體脂率自動計算';
+        }
+
+        const leanIdx = getMetricValue(rec, 'leanIndex');
+        const prevLeanIdx = getPreviousMetric(currentDateStr, 'leanIndex');
+        document.getElementById('autoLeanIndexVal').textContent = leanIdx !== null ? leanIdx.toFixed(2) : '—';
+        const leanBadgeEl = document.getElementById('autoLeanBadge');
+        if (leanIdx !== null) {
+          if (leanIdx > 24) {
+            leanBadgeEl.innerHTML = `<span class="inline-block px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-green text-[11px]">✨ 已達易瘦體質！</span>`;
+          } else {
+            leanBadgeEl.innerHTML = `<span class="inline-block px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-yellow text-[11px]">💪 持續增肌加油！</span>`;
+          }
+        } else {
+          leanBadgeEl.innerHTML = `<span class="text-[10px] opacity-75">基礎代謝 ÷ 體重</span>`;
+        }
+        const leanDeltaEl = document.getElementById('autoLeanIndexDelta');
+        if (leanIdx !== null && prevLeanIdx) {
+          const d = leanIdx - prevLeanIdx.value;
+          leanDeltaEl.innerHTML = `<span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] ${getDeltaBadgeColor(d, false)}">${formatSigned(d, '', 2)}</span>`;
+        } else {
+          leanDeltaEl.textContent = '—';
+        }
+
+        renderBodyFieldGroup('bodyCompFieldsContainer', BODY_COMP_FIELDS);
+        const compParts = [];
+        if (curW !== null) compParts.push(`體重 ${curW}kg`);
+        const curFat = getMetricValue(rec, 'bodyFat');
+        if (curFat !== null) compParts.push(`體脂 ${curFat}%`);
+        if (leanIdx !== null) compParts.push(`易瘦係數 ${leanIdx}`);
+        document.getElementById('bodyCompSummary').textContent = compParts.length ? compParts.join(' · ') : '點擊展開輸入・含自動計算指標';
+
+        renderBodyFieldGroup('bodyMeasureFieldsContainer', BODY_MEASURE_FIELDS);
+        const curWaist = getMetricValue(rec, 'waist');
+        const curHip = getMetricValue(rec, 'hip');
+        const measParts = [];
+        if (curWaist !== null) measParts.push(`腰圍 ${curWaist}cm`);
+        if (curHip !== null) measParts.push(`臀圍 ${curHip}cm`);
+        document.getElementById('bodyMeasureSummary').textContent = measParts.length ? measParts.join(' · ') : '點擊展開記錄 7 項圍度';
+
+        syncCollapsibleUI();
+      }
+
+      function renderBodyFieldGroup(containerId, fields) {
+        const rec = getDayRecord(currentDateStr);
+        const container = document.getElementById(containerId);
+        container.innerHTML = fields.map(f => {
+          const rawVal = rec.body[f.key] !== undefined ? rec.body[f.key] : '';
+          const curVal = toNum(rawVal);
+          const prev = getPreviousMetric(currentDateStr, f.key);
+          const goalVal = toNum(appState.goals[f.key]);
+
+          let deltaHtml = `<span class="text-[10px] opacity-60">無前筆</span>`;
+          if (curVal !== null && prev) {
+            const diff = curVal - prev.value;
+            deltaHtml = `<span class="px-1.5 py-0.5 rounded-full border-2 border-[#3E3A39] text-[10px] ${getDeltaBadgeColor(diff, f.lowerBetter)}">${formatSigned(diff, '', f.step === '1' ? 0 : 1)}</span>`;
+          }
+
+          let goalHtml = '';
+          if (goalVal !== null) {
+            if (curVal !== null) {
+              const gDiff = curVal - goalVal;
+              const reached = f.lowerBetter ? curVal <= goalVal : curVal >= goalVal;
+              goalHtml = reached
+                ? `<span class="text-[10px] text-[#3E3A39] bg-green px-1.5 rounded-full border border-[#3E3A39]">🎯達標</span>`
+                : `<span class="text-[10px] opacity-80">目標 ${goalVal} (差 ${gDiff > 0 ? '+' : ''}${gDiff.toFixed(1)})</span>`;
+            } else {
+              goalHtml = `<span class="text-[10px] opacity-75">目標 ${goalVal}${f.unit}</span>`;
+            }
+          }
+
+          return `
+            <div class="ehon-subcard p-2 bg-paper space-y-1.5">
+              <div class="flex items-center justify-between gap-1">
+                <label class="text-xs truncate">${f.label}${f.unit ? ` (${f.unit})` : ''}</label>
+                ${deltaHtml}
+              </div>
+              <input type="number" step="${f.step}" data-body-field="${f.key}" value="${escapeHtml(rawVal)}" placeholder="輸入數值" class="ehon-input py-1.5 text-sm" />
+              ${goalHtml ? `<div class="pt-0.5">${goalHtml}</div>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderTrendChart() {
+        const container = document.getElementById('trendChartContainer');
+        const allHistory = getMetricHistory(chartMetric);
+        const series = chartRange >= 999 ? allHistory : allHistory.slice(-chartRange);
+
+        document.querySelectorAll('#chartMetricButtons button').forEach(btn => {
+          btn.classList.toggle('bg-green', btn.dataset.metric === chartMetric);
+        });
+        document.querySelectorAll('#chartRangeButtons button').forEach(btn => {
+          btn.classList.toggle('bg-yellow', Number(btn.dataset.range) === chartRange);
+        });
+
+        if (series.length === 0) {
+          container.innerHTML = `<div class="py-10 text-center text-xs opacity-75">尚無此項目的歷史數據，可先填寫數值或至「總覽備份」載入範例數據！</div>`;
+          return;
+        }
+
+        const goalVal = chartMetric === 'leanIndex' ? 24 : toNum(appState.goals[chartMetric]);
+        const vals = series.map(p => p.value);
+        if (goalVal !== null) vals.push(goalVal);
+
+        let minVal = Math.min(...vals);
+        let maxVal = Math.max(...vals);
+        if (maxVal === minVal) {
+          minVal -= 1;
+          maxVal += 1;
+        } else {
+          const pad = (maxVal - minVal) * 0.18;
+          minVal -= pad;
+          maxVal += pad;
+        }
+
+        const W = 400;
+        const H = 185;
+        const padL = 38;
+        const padR = 18;
+        const padT = 22;
+        const padB = 28;
+        const plotW = W - padL - padR;
+        const plotH = H - padT - padB;
+
+        const getX = (idx) => series.length === 1 ? padL + plotW / 2 : padL + (idx / (series.length - 1)) * plotW;
+        const getY = (val) => padT + ((maxVal - val) / (maxVal - minVal)) * plotH;
+
+        const points = series.map((pt, i) => ({
+          x: getX(i),
+          y: getY(pt.value),
+          date: pt.date,
+          value: pt.value,
+          isCurrent: pt.date === currentDateStr
+        }));
+
+        const polyStr = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+        const areaStr = points.length > 1
+          ? `${points[0].x.toFixed(1)},${(padT + plotH).toFixed(1)} ${polyStr} ${points[points.length - 1].x.toFixed(1)},${(padT + plotH).toFixed(1)}`
+          : '';
+
+        let goalLineSvg = '';
+        if (goalVal !== null) {
+          const gy = getY(goalVal);
+          goalLineSvg = `
+            <line x1="${padL}" y1="${gy.toFixed(1)}" x2="${W - padR}" y2="${gy.toFixed(1)}" stroke="#F2A497" stroke-width="2.5" stroke-dasharray="6 4"/>
+            <text x="${W - padR}" y="${(gy - 4).toFixed(1)}" text-anchor="end" font-size="10" fill="#3E3A39">目標 ${goalVal}</text>
+          `;
+        }
+
+        const midVal = (minVal + maxVal) / 2;
+        const yTicks = [maxVal, midVal, minVal];
+
+        const gridSvg = yTicks.map(v => {
+          const y = getY(v);
+          return `
+            <line x1="${padL}" y1="${y.toFixed(1)}" x2="${W - padR}" y2="${y.toFixed(1)}" stroke="#3E3A39" stroke-opacity="0.14" stroke-width="1.5"/>
+            <text x="${padL - 5}" y="${(y + 3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="#3E3A39">${v.toFixed(1)}</text>
+          `;
+        }).join('');
+
+        const dotsSvg = points.map((p, i) => {
+          const showLabel = points.length <= 10 || i === 0 || i === points.length - 1 || p.isCurrent;
+          const dateShort = p.date.slice(5).replace('-', '/');
+          return `
+            <g>
+              <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${p.isCurrent ? 6.5 : 4.5}" fill="${p.isCurrent ? '#F2A497' : '#F6D27A'}" stroke="#3E3A39" stroke-width="2.5"/>
+              ${showLabel ? `<text x="${p.x.toFixed(1)}" y="${(p.y - 9).toFixed(1)}" text-anchor="middle" font-size="10" fill="#3E3A39">${p.value.toFixed(1)}</text>` : ''}
+              ${showLabel ? `<text x="${p.x.toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="9.5" fill="#3E3A39">${dateShort}</text>` : ''}
+            </g>
+          `;
+        }).join('');
+
+        container.innerHTML = `
+          <svg viewBox="0 0 ${W} ${H}" class="w-full h-auto block">
+            ${gridSvg}
+            ${areaStr ? `<polygon points="${areaStr}" fill="#B9DAA5" fill-opacity="0.35"/>` : ''}
+            ${goalLineSvg}
+            ${points.length > 1 ? `<polyline points="${polyStr}" fill="none" stroke="#3E3A39" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+            ${dotsSvg}
+          </svg>
+        `;
+      }
+
+      // -----------------------------------------------------------------------
+      // 渲染：分頁三「影像日記」
+      // -----------------------------------------------------------------------
+      async function renderPhotosTab() {
+        allPhotosCache = await idbGetAllPhotos();
+        allPhotosCache.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        document.getElementById('subTabDietPhoto').classList.toggle('bg-yellow', photoSubTab === 'diet');
+        document.getElementById('subTabDietPhoto').classList.toggle('bg-paper', photoSubTab !== 'diet');
+        document.getElementById('subTabBodyPhoto').classList.toggle('bg-yellow', photoSubTab === 'body');
+        document.getElementById('subTabBodyPhoto').classList.toggle('bg-paper', photoSubTab !== 'body');
+
+        const isDiet = photoSubTab === 'diet';
+        document.getElementById('photoUploadTitle').textContent = isDiet ? '新增當日飲食照片' : '新增當日體型照片';
+        document.getElementById('photoTagLabel').textContent = isDiet ? '餐別' : '拍攝角度';
+        const tags = isDiet ? DIET_PHOTO_TAGS : BODY_PHOTO_TAGS;
+        const tagSelect = document.getElementById('photoTagSelect');
+        tagSelect.innerHTML = tags.map(t => `<option value="${t}">${t}</option>`).join('');
+
+        const now = new Date();
+        if (!document.getElementById('photoTimeInput').value) {
+          document.getElementById('photoTimeInput').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+
+        const compareCard = document.getElementById('bodyCompareCard');
+        const bodyPhotos = allPhotosCache.filter(p => p.type === 'body');
+        if (!isDiet && bodyPhotos.length >= 2) {
+          compareCard.classList.remove('hidden');
+          renderBodyCompare(bodyPhotos);
+        } else {
+          compareCard.classList.add('hidden');
+        }
+
+        document.getElementById('btnPhotoScopeDay').classList.toggle('bg-yellow', photoScope === 'day');
+        document.getElementById('btnPhotoScopeAll').classList.toggle('bg-yellow', photoScope === 'all');
+        document.getElementById('photoListHeading').textContent = `${photoScope === 'day' ? '當日' : '全部'}${isDiet ? '飲食' : '體型'}照片`;
+
+        const filtered = allPhotosCache.filter(p => {
+          if (p.type !== photoSubTab) return false;
+          if (photoScope === 'day' && p.date !== currentDateStr) return false;
+          return true;
+        });
+
+        const grid = document.getElementById('photoGridContainer');
+        if (filtered.length === 0) {
+          grid.innerHTML = `<div class="col-span-2 ehon-subcard p-6 text-center text-xs opacity-75">目前尚無照片，點上方「直接拍照」或「選擇相簿」留住紀錄吧！</div>`;
+          return;
+        }
+
+        grid.innerHTML = filtered.map(p => `
+          <div class="polaroid-card cursor-pointer" data-open-photo="${p.id}">
+            <div class="polaroid-img-wrap ${p.type === 'body' ? 'portrait' : ''}">
+              <img src="${p.dataUrl}" alt="${escapeHtml(p.tag)}" class="w-full h-full object-cover" />
+              <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-yellow text-[10px]">${escapeHtml(p.tag)}</span>
+              ${p.type === 'body' && p.weight ? `<span class="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-paper text-[10px]">${p.weight}kg</span>` : ''}
+            </div>
+            <div class="mt-2 px-1">
+              <div class="text-[11px] opacity-75">${p.date} ${p.time || ''}</div>
+              <div class="text-xs truncate mt-0.5">${escapeHtml(p.note || '無備註')}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderBodyCompare(bodyPhotos) {
+        const selA = document.getElementById('compareSelectA');
+        const selB = document.getElementById('compareSelectB');
+        const prevA = selA.value;
+        const prevB = selB.value;
+
+        const optsHtml = bodyPhotos.map(p => `<option value="${p.id}">${p.date} ${p.tag}${p.weight ? ' (' + p.weight + 'kg)' : ''}</option>`).join('');
+        selA.innerHTML = optsHtml;
+        selB.innerHTML = optsHtml;
+
+        if (prevA && bodyPhotos.some(p => p.id === prevA)) {
+          selA.value = prevA;
+        } else {
+          selA.value = bodyPhotos[bodyPhotos.length - 1].id;
+        }
+        if (prevB && bodyPhotos.some(p => p.id === prevB)) {
+          selB.value = prevB;
+        } else {
+          selB.value = bodyPhotos[0].id;
+        }
+
+        updateComparePreview(bodyPhotos);
+      }
+
+      function updateComparePreview(bodyPhotos) {
+        const idA = document.getElementById('compareSelectA').value;
+        const idB = document.getElementById('compareSelectB').value;
+        const pA = bodyPhotos.find(p => p.id === idA);
+        const pB = bodyPhotos.find(p => p.id === idB);
+        const badge = document.getElementById('compareWeightDiffBadge');
+        const grid = document.getElementById('comparePreviewGrid');
+
+        if (!pA || !pB) return;
+        const wA = toNum(pA.weight);
+        const wB = toNum(pB.weight);
+        if (wA !== null && wB !== null) {
+          const diff = wB - wA;
+          badge.textContent = `體重變化 ${formatSigned(diff, 'kg', 1)}`;
+          badge.className = `ehon-pill px-2.5 py-0.5 text-xs ${getDeltaBadgeColor(diff, true)}`;
+        } else {
+          badge.textContent = '並排對比中';
+          badge.className = 'ehon-pill px-2.5 py-0.5 text-xs bg-yellow';
+        }
+
+        grid.innerHTML = [
+          { label: 'Before', photo: pA },
+          { label: 'After', photo: pB }
+        ].map(item => `
+          <div class="polaroid-card">
+            <div class="text-[11px] mb-1 text-center">${item.label} · ${item.photo.date}</div>
+            <div class="polaroid-img-wrap portrait">
+              <img src="${item.photo.dataUrl}" alt="${item.label}" class="w-full h-full object-cover" />
+              ${item.photo.weight ? `<span class="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-paper text-[10px]">${item.photo.weight}kg</span>` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // -----------------------------------------------------------------------
+      // 渲染：分頁四「記帳本」
+      // -----------------------------------------------------------------------
+      function computeAccountBalances() {
+        const map = {};
+        appState.accounts.forEach(acc => {
+          map[acc.id] = {
+            ...acc,
+            balance: Number(acc.initialBalance) || 0,
+            monthSpent: 0
+          };
+        });
+
+        const monthPrefix = currentDateStr.slice(0, 7);
+        Object.keys(appState.days).forEach(d => {
+          const txs = appState.days[d].transactions || [];
+          txs.forEach(tx => {
+            const amt = Number(tx.amount) || 0;
+            const acc = map[tx.accountId];
+            if (!acc) return;
+            if (acc.type === 'credit') {
+              if (tx.type === 'expense') {
+                acc.balance += amt;
+                if (d.startsWith(monthPrefix)) acc.monthSpent += amt;
+              } else {
+                acc.balance -= amt;
+              }
+            } else {
+              if (tx.type === 'income') acc.balance += amt;
+              else acc.balance -= amt;
+            }
+          });
+        });
+
+        return map;
+      }
+
+      function computeMonthMoneySummary(monthPrefix) {
+        let income = 0;
+        let expense = 0;
+        Object.keys(appState.days).forEach(d => {
+          if (!d.startsWith(monthPrefix)) return;
+          (appState.days[d].transactions || []).forEach(tx => {
+            const amt = Number(tx.amount) || 0;
+            if (tx.type === 'income') income += amt;
+            else expense += amt;
+          });
+        });
+        return { income, expense, net: income - expense };
+      }
+
+      function renderMoneyTab() {
+        const rec = getDayRecord(currentDateStr);
+        const monthPrefix = currentDateStr.slice(0, 7);
+        const [yy, mm] = monthPrefix.split('-');
+        document.getElementById('moneyMonthLabel').textContent = `${yy} 年 ${Number(mm)} 月收支總覽`;
+
+        let todayExp = 0;
+        let todayInc = 0;
+        rec.transactions.forEach(tx => {
+          if (tx.type === 'income') todayInc += Number(tx.amount) || 0;
+          else todayExp += Number(tx.amount) || 0;
+        });
+        document.getElementById('todayExpenseVal').textContent = todayExp.toLocaleString();
+        document.getElementById('todayIncomeVal').textContent = todayInc.toLocaleString();
+
+        const monthSum = computeMonthMoneySummary(monthPrefix);
+        document.getElementById('monthIncomeVal').textContent = monthSum.income.toLocaleString();
+        document.getElementById('monthExpenseVal').textContent = monthSum.expense.toLocaleString();
+        document.getElementById('monthNetVal').textContent = monthSum.net.toLocaleString();
+
+        const balMap = computeAccountBalances();
+        const accContainer = document.getElementById('accountsCardsContainer');
+        accContainer.innerHTML = appState.accounts.map(acc => {
+          const info = balMap[acc.id];
+          const typeMeta = ACCOUNT_TYPES[acc.type] || ACCOUNT_TYPES.expense;
+          const isSelected = accountFilterId === acc.id;
+          const subtitle = acc.type === 'credit' ? '累計未繳消費' : '目前餘額';
+          return `
+            <button type="button" data-filter-acc="${acc.id}" class="ehon-subcard p-2.5 text-left ${typeMeta.bgClass} ${isSelected ? 'ring-4 ring-[#3E3A39]' : ''}">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-xs truncate">${escapeHtml(acc.name)}</span>
+                <span class="text-[10px] px-1.5 rounded-full border border-[#3E3A39] bg-paper shrink-0">${typeMeta.label.split('／')[0]}</span>
+              </div>
+              <div class="text-base mt-1">$${info.balance.toLocaleString()}</div>
+              <div class="text-[10px] opacity-80">${subtitle}</div>
+            </button>
+          `;
+        }).join('');
+
+        const qbContainer = document.getElementById('quickButtonsContainer');
+        if (appState.quickButtons.length === 0) {
+          qbContainer.innerHTML = `<span class="text-xs opacity-70">尚未設定常用按鈕，點右上角「自訂按鈕」新增！</span>`;
+        } else {
+          qbContainer.innerHTML = appState.quickButtons.map(qb => `
+            <button type="button" data-use-qb="${qb.id}" class="ehon-pill px-3 py-1.5 text-xs ${qb.type === 'income' ? 'bg-green' : 'bg-cream'}">
+              <span>${escapeHtml(qb.name)}</span>
+              <span class="opacity-80">${qb.type === 'income' ? '+' : '-'}$${Number(qb.amount).toLocaleString()}</span>
+            </button>
+          `).join('');
+        }
+
+        document.getElementById('txTypeExpenseBtn').classList.toggle('bg-coral', txFormType === 'expense');
+        document.getElementById('txTypeIncomeBtn').classList.toggle('bg-green', txFormType === 'income');
+
+        const cats = txFormType === 'income' ? INCOME_CATS : EXPENSE_CATS;
+        const catSel = document.getElementById('txCategorySelect');
+        const prevCat = catSel.value;
+        catSel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (cats.includes(prevCat)) catSel.value = prevCat;
+
+        const accSel = document.getElementById('txAccountSelect');
+        const prevAcc = accSel.value;
+        accSel.innerHTML = appState.accounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+        if (appState.accounts.some(a => a.id === prevAcc)) accSel.value = prevAcc;
+
+        document.getElementById('btnClearAccountFilter').classList.toggle('hidden', !accountFilterId);
+        const listEl = document.getElementById('txListContainer');
+        const visibleTxs = accountFilterId
+          ? rec.transactions.filter(t => t.accountId === accountFilterId)
+          : rec.transactions;
+
+        if (visibleTxs.length === 0) {
+          listEl.innerHTML = `<div class="text-xs opacity-70 text-center py-4">當日尚無交易明細</div>`;
+        } else {
+          listEl.innerHTML = visibleTxs.map(tx => {
+            const acc = appState.accounts.find(a => a.id === tx.accountId);
+            const accName = acc ? acc.name : '未指定帳戶';
+            const isInc = tx.type === 'income';
+            return `
+              <div class="ehon-subcard p-2.5 bg-paper flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="text-sm truncate">${escapeHtml(tx.title)}</div>
+                  <div class="text-[11px] opacity-75">${escapeHtml(tx.category)} · ${escapeHtml(accName)}</div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] text-xs ${isInc ? 'bg-green' : 'bg-coral'}">
+                    ${isInc ? '+' : '-'}$${Number(tx.amount).toLocaleString()}
+                  </span>
+                  <button type="button" data-del-tx="${tx.id}" class="ehon-pill w-7 h-7 text-xs bg-cream" aria-label="刪除交易">✕</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // -----------------------------------------------------------------------
+      // 渲染：分頁五「總覽與備份」
+      // -----------------------------------------------------------------------
+      function renderOverviewTab() {
+        const endDate = currentDateStr;
+        const dates = [];
+        for (let i = 6; i >= 0; i--) dates.push(shiftDate(endDate, -i));
+        document.getElementById('weekRangeText').textContent = `${dates[0].slice(5)} ~ ${dates[6].slice(5)}`;
+
+        let sumPct = 0;
+        let waterOkDays = 0;
+        const weekWeights = [];
+
+        const rowsHtml = dates.map(dStr => {
+          const rec = getDayRecord(dStr);
+          const sType = getEffectiveScheduleType(dStr);
+          const tpl = SCHEDULE_TEMPLATES[sType];
+          const done = tpl.items.filter(it => !!rec.checkedTasks[it.id]).length;
+          const pct = tpl.items.length ? Math.round((done / tpl.items.length) * 100) : 0;
+          sumPct += pct;
+          if ((Number(rec.waterMl) || 0) >= 2500) waterOkDays++;
+          const w = getMetricValue(rec, 'weight');
+          if (w !== null) weekWeights.push(w);
+
+          const dt = parseDateStr(dStr);
+          const wd = WEEKDAY_NAMES[dt.getDay()];
+          const isCur = dStr === currentDateStr;
+
+          return `
+            <button type="button" data-jump-date="${dStr}" class="w-full ehon-subcard p-2.5 flex items-center justify-between gap-2 text-left ${isCur ? 'bg-yellow' : 'bg-paper'}">
+              <div class="text-xs shrink-0">${dStr.slice(5)}（${wd}）</div>
+              <div class="flex-1 flex items-center gap-2 text-[11px] justify-end flex-wrap">
+                <span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] ${pct >= 80 ? 'bg-green' : 'bg-cream'}">作息 ${pct}%</span>
+                <span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] ${(Number(rec.waterMl) || 0) >= 2500 ? 'bg-blue' : 'bg-cream'}">💧${rec.waterMl || 0}</span>
+                <span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] bg-paper">${w !== null ? w.toFixed(1) + 'kg' : '—'}</span>
+              </div>
+            </button>
+          `;
+        }).join('');
+
+        document.getElementById('weekDaysContainer').innerHTML = rowsHtml;
+        document.getElementById('ovAvgCompletion').textContent = Math.round(sumPct / 7);
+        document.getElementById('ovWaterDays').textContent = waterOkDays;
+
+        const wTrendEl = document.getElementById('ovWeightTrend');
+        if (weekWeights.length >= 2) {
+          const diff = weekWeights[weekWeights.length - 1] - weekWeights[0];
+          wTrendEl.innerHTML = `<span class="px-2 py-0.5 rounded-full border-2 border-[#3E3A39] ${getDeltaBadgeColor(diff, true)}">${formatSigned(diff, 'kg', 1)}</span>`;
+        } else {
+          wTrendEl.textContent = '資料不足';
+        }
+
+        const monthSum = computeMonthMoneySummary(currentDateStr.slice(0, 7));
+        document.getElementById('ovMonthInc').textContent = monthSum.income.toLocaleString();
+        document.getElementById('ovMonthExp').textContent = monthSum.expense.toLocaleString();
+        document.getElementById('ovMonthNet').textContent = monthSum.net.toLocaleString();
+
+        const balMap = computeAccountBalances();
+        document.getElementById('ovAccountsSummary').innerHTML = appState.accounts.map(acc => {
+          const info = balMap[acc.id];
+          const typeMeta = ACCOUNT_TYPES[acc.type] || ACCOUNT_TYPES.expense;
+          return `
+            <div class="flex items-center justify-between text-xs p-2 rounded-xl border-2 border-[#3E3A39] ${typeMeta.bgClass}">
+              <span>${escapeHtml(acc.name)}（${typeMeta.label.split('／')[0]}）</span>
+              <span>$${info.balance.toLocaleString()}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // -----------------------------------------------------------------------
+      // 渲染總入口
+      // -----------------------------------------------------------------------
+      function renderAll(withBounce = false) {
+        renderHeader();
+        if (activeTab === 'schedule') renderScheduleTab();
+        else if (activeTab === 'body') renderBodyTab();
+        else if (activeTab === 'photos') renderPhotosTab();
+        else if (activeTab === 'money') renderMoneyTab();
+        else if (activeTab === 'overview') renderOverviewTab();
+
+        if (withBounce) triggerDateBounce();
+      }
+
+      function switchTab(tabName) {
+        activeTab = tabName;
+        document.querySelectorAll('.tab-panel').forEach(sec => {
+          sec.classList.toggle('hidden', sec.id !== `tab-${tabName}`);
+        });
+        document.querySelectorAll('.nav-tab').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+        renderAll(false);
+        window.scrollTo({ top: 0, behavior: document.body.classList.contains('reduce-motion') ? 'auto' : 'smooth' });
+      }
+
+      // -----------------------------------------------------------------------
+      // 彈窗渲染
+      // -----------------------------------------------------------------------
+      function openGoalsModal() {
+        const container = document.getElementById('goalsFormContainer');
+        container.innerHTML = ALL_GOAL_FIELDS.map(f => `
+          <div>
+            <label class="block text-[11px] mb-1">${f.label}${f.unit ? ` (${f.unit})` : ''}</label>
+            <input type="number" step="${f.step}" data-goal-key="${f.key}" value="${escapeHtml(appState.goals[f.key] || '')}" placeholder="留空不設" class="ehon-input py-1.5 text-sm" />
+          </div>
+        `).join('');
+        document.getElementById('goalsModal').classList.add('open');
+      }
+
+      function renderAccountsManageList() {
+        const list = document.getElementById('accountsManageList');
+        list.innerHTML = appState.accounts.map(acc => {
+          const meta = ACCOUNT_TYPES[acc.type] || ACCOUNT_TYPES.expense;
+          return `
+            <div class="ehon-subcard p-2.5 flex items-center justify-between gap-2 ${meta.bgClass}">
+              <div class="min-w-0">
+                <div class="text-sm truncate">${escapeHtml(acc.name)}</div>
+                <div class="text-[11px] opacity-85">${meta.label} · 初始 $${Number(acc.initialBalance || 0).toLocaleString()}</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" data-edit-acc="${acc.id}" class="ehon-pill px-2.5 py-1 text-xs bg-paper">編輯</button>
+                <button type="button" data-del-acc="${acc.id}" class="ehon-pill px-2.5 py-1 text-xs bg-coral">刪除</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function populateQuickBtnModalSelects() {
+        const type = document.getElementById('qbTypeSelect').value;
+        const cats = type === 'income' ? INCOME_CATS : EXPENSE_CATS;
+        document.getElementById('qbCategorySelect').innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+        document.getElementById('qbAccountSelect').innerHTML = appState.accounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+      }
+
+      function renderQuickBtnsManageList() {
+        const list = document.getElementById('quickBtnsManageList');
+        if (appState.quickButtons.length === 0) {
+          list.innerHTML = `<div class="text-xs opacity-70 text-center py-3">尚無常用按鈕</div>`;
+          return;
+        }
+        list.innerHTML = appState.quickButtons.map(qb => {
+          const acc = appState.accounts.find(a => a.id === qb.accountId);
+          return `
+            <div class="ehon-subcard p-2.5 bg-paper flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="text-sm truncate">${escapeHtml(qb.name)}（${qb.type === 'income' ? '+' : '-'}$${qb.amount}）</div>
+                <div class="text-[11px] opacity-75">${escapeHtml(qb.category)} · ${escapeHtml(acc ? acc.name : '未指定')}</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" data-edit-qb="${qb.id}" class="ehon-pill px-2.5 py-1 text-xs bg-yellow">編輯</button>
+                <button type="button" data-del-qb="${qb.id}" class="ehon-pill px-2.5 py-1 text-xs bg-coral">刪除</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // -----------------------------------------------------------------------
+      // 範例數據產生器
+      // -----------------------------------------------------------------------
+      function loadDemoData() {
+        const baseW = 86.2;
+        const baseFat = 35.8;
+        const baseWaist = 91.5;
+        for (let i = 6; i >= 0; i--) {
+          const dStr = shiftDate(currentDateStr, -i);
+          if (appState.days[dStr] && Object.keys(appState.days[dStr].body || {}).length > 0) continue;
+
+          const rec = getDayRecord(dStr);
+          const step = 6 - i;
+          const w = Number((baseW - step * 0.22 + (i % 2 === 0 ? 0.08 : -0.05)).toFixed(1));
+          const bf = Number((baseFat - step * 0.14).toFixed(1));
+          const bmr = Math.round(1980 + step * 8);
+          rec.body = {
+            weight: String(w),
+            bodyFat: String(bf),
+            bodyAge: String(Math.max(38, 45 - Math.floor(step / 3))),
+            bmi: String(Number((w / (1.65 * 1.65)).toFixed(1))),
+            bmr: String(bmr),
+            visceralFat: String(Number((11.5 - step * 0.1).toFixed(1))),
+            wholeFat: String(bf),
+            wholeMuscle: String(Number((26.2 + step * 0.12).toFixed(1))),
+            trunkFat: String(Number((34.0 - step * 0.15).toFixed(1))),
+            trunkMuscle: String(Number((21.5 + step * 0.1).toFixed(1))),
+            legsFat: String(Number((38.5 - step * 0.12).toFixed(1))),
+            legsMuscle: String(Number((41.2 + step * 0.15).toFixed(1))),
+            armsFat: String(Number((39.2 - step * 0.1).toFixed(1))),
+            armsMuscle: String(Number((25.0 + step * 0.08).toFixed(1))),
+            upperChest: '98.0',
+            underChest: '84.5',
+            waist: String(Number((baseWaist - step * 0.25).toFixed(1))),
+            hip: String(Number((104.5 - step * 0.15).toFixed(1))),
+            rightThigh: '59.2',
+            rightCalf: '38.4',
+            rightArm: '31.0'
+          };
+          rec.waterMl = i % 3 === 0 ? 2250 : 2500;
+          rec.bpSys = String(126 - (step % 4));
+          rec.bpDia = String(80 - (step % 3));
+          rec.bpPulse = '68';
+          rec.mood = i % 2 === 0 ? 'great' : 'calm';
+          rec.exerciseTags = i % 2 === 0 ? ['有氧課', '伸展'] : ['快走'];
+          rec.exerciseDuration = '50';
+
+          const tpl = SCHEDULE_TEMPLATES[getEffectiveScheduleType(dStr)];
+          tpl.items.slice(0, Math.max(8, tpl.items.length - (i % 3))).forEach(it => {
+            rec.checkedTasks[it.id] = true;
+          });
+
+          if (rec.transactions.length === 0) {
+            rec.transactions.push(
+              { id: `demo-${dStr}-1`, title: '健康餐盒', amount: 135, type: 'expense', category: '飲食', accountId: appState.accounts[0]?.id || 'acc-cash' },
+              { id: `demo-${dStr}-2`, title: '無糖豆漿與水煮蛋', amount: 65, type: 'expense', category: '飲食', accountId: appState.accounts[3]?.id || 'acc-line' }
+            );
+          }
+        }
+        saveState(true);
+        renderAll(true);
+        showAlert('已成功載入 7 天自然範例數據！現在可以到「體態數據」欣賞折線趨勢圖囉。');
+      }
+
+      // -----------------------------------------------------------------------
+      // 綁定所有互動事件
+      // -----------------------------------------------------------------------
+      function bindEvents() {
+        const btnRM = document.getElementById('btnReduceMotion');
+        function applyReduceMotion(enabled) {
+          document.body.classList.toggle('reduce-motion', enabled);
+          btnRM.setAttribute('aria-pressed', String(enabled));
+          btnRM.classList.toggle('bg-blue', enabled);
+          document.getElementById('reduceMotionLabel').textContent = enabled ? '動態已停' : '減少動態';
+        }
+        const savedRM = localStorage.getItem(PREF_REDUCE_MOTION_KEY);
+        const sysRM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        applyReduceMotion(savedRM !== null ? savedRM === '1' : sysRM);
+
+        btnRM.addEventListener('click', () => {
+          const next = !document.body.classList.contains('reduce-motion');
+          localStorage.setItem(PREF_REDUCE_MOTION_KEY, next ? '1' : '0');
+          applyReduceMotion(next);
+        });
+
+        document.getElementById('btnPrevDay').addEventListener('click', () => {
+          currentDateStr = shiftDate(currentDateStr, -1);
+          renderAll(true);
+        });
+        document.getElementById('btnNextDay').addEventListener('click', () => {
+          currentDateStr = shiftDate(currentDateStr, 1);
+          renderAll(true);
+        });
+        document.getElementById('btnGoToday').addEventListener('click', () => {
+          currentDateStr = getTodayStr();
+          renderAll(true);
+        });
+        document.getElementById('btnPickDate').addEventListener('click', () => {
+          const picker = document.getElementById('nativeDatePicker');
+          if (picker.showPicker) picker.showPicker();
+          else picker.click();
+        });
+        document.getElementById('nativeDatePicker').addEventListener('change', (e) => {
+          if (e.target.value) {
+            currentDateStr = e.target.value;
+            renderAll(true);
+          }
+        });
+
+        document.getElementById('btnToggleScheduleType').addEventListener('click', () => {
+          const rec = getDayRecord(currentDateStr);
+          const cur = getEffectiveScheduleType(currentDateStr);
+          const order = ['weekday', 'saturday', 'sunday'];
+          rec.scheduleOverride = order[(order.indexOf(cur) + 1) % order.length];
+          saveState(true);
+          renderAll(true);
+        });
+
+        document.querySelectorAll('.nav-tab').forEach(btn => {
+          btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        });
+
+        document.getElementById('btnOpenRules').addEventListener('click', () => {
+          document.getElementById('rulesModal').classList.add('open');
+        });
+        document.getElementById('btnCloseRules').addEventListener('click', () => {
+          document.getElementById('rulesModal').classList.remove('open');
+        });
+
+        document.querySelectorAll('[data-toggle-section]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const key = btn.dataset.toggleSection;
+            collapsedSections[key] = !collapsedSections[key];
+            syncCollapsibleUI();
+          });
+        });
+
+        document.getElementById('btnToggleScheduleFocus').addEventListener('click', () => {
+          scheduleShowAll = !scheduleShowAll;
+          renderScheduleTab();
+        });
+
+        document.querySelectorAll('[data-water]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const rec = getDayRecord(currentDateStr);
+            const delta = Number(btn.dataset.water);
+            rec.waterMl = Math.max(0, (Number(rec.waterMl) || 0) + delta);
+            saveState(true);
+            renderScheduleTab();
+          });
+        });
+
+        ['bpSys', 'bpDia', 'bpPulse'].forEach(id => {
+          document.getElementById(id).addEventListener('input', (e) => {
+            const rec = getDayRecord(currentDateStr);
+            rec[id] = e.target.value;
+            if (id === 'bpSys') updateBpAlert(e.target.value);
+            saveState(true);
+            const bpParts = [];
+            if (rec.bpSys || rec.bpDia) bpParts.push(`血壓 ${rec.bpSys || '?'}/${rec.bpDia || '?'}`);
+            if (rec.bpPulse) bpParts.push(`心跳 ${rec.bpPulse}`);
+            const curW = getMetricValue(rec, 'weight');
+            if (curW !== null) bpParts.push(`體重 ${curW.toFixed(1)}kg`);
+            document.getElementById('bpWeightSummary').textContent = bpParts.length ? bpParts.join(' · ') : '點此填寫血壓與體重';
+          });
+        });
+
+        document.getElementById('quickWeightInput').addEventListener('input', (e) => {
+          const rec = getDayRecord(currentDateStr);
+          rec.body.weight = e.target.value;
+          saveState(true);
+          renderScheduleTab();
+        });
+
+        document.getElementById('btnJumpBodyTab').addEventListener('click', () => {
+          collapsedSections.bodyComp = false;
+          switchTab('body');
+        });
+
+        document.getElementById('scheduleListContainer').addEventListener('click', (e) => {
+          const checkBtn = e.target.closest('[data-check-task]');
+          if (checkBtn) {
+            const id = checkBtn.dataset.checkTask;
+            const rec = getDayRecord(currentDateStr);
+            rec.checkedTasks[id] = !rec.checkedTasks[id];
+            saveState(true);
+            renderScheduleTab();
+            return;
+          }
+          const expandEl = e.target.closest('[data-expand-task]');
+          if (expandEl) {
+            const id = expandEl.dataset.expandTask;
+            if (expandedTaskIds.has(id)) expandedTaskIds.delete(id);
+            else expandedTaskIds.add(id);
+            renderScheduleTab();
+          }
+        });
+
+        document.getElementById('exerciseTagsContainer').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-ex-tag]');
+          if (!btn) return;
+          const tag = btn.dataset.exTag;
+          const rec = getDayRecord(currentDateStr);
+          const idx = rec.exerciseTags.indexOf(tag);
+          if (idx >= 0) rec.exerciseTags.splice(idx, 1);
+          else rec.exerciseTags.push(tag);
+          saveState(true);
+          renderScheduleTab();
+        });
+
+        document.getElementById('exerciseDuration').addEventListener('input', (e) => {
+          getDayRecord(currentDateStr).exerciseDuration = e.target.value;
+          saveState(true);
+        });
+        document.getElementById('exerciseNotes').addEventListener('input', (e) => {
+          getDayRecord(currentDateStr).exerciseNotes = e.target.value;
+          saveState(true);
+        });
+
+        document.getElementById('moodPickerContainer').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-mood]');
+          if (!btn) return;
+          const rec = getDayRecord(currentDateStr);
+          rec.mood = rec.mood === btn.dataset.mood ? '' : btn.dataset.mood;
+          saveState(true);
+          renderScheduleTab();
+        });
+
+        document.getElementById('symptomsContainer').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-symptom]');
+          if (!btn) return;
+          const symp = btn.dataset.symptom;
+          const rec = getDayRecord(currentDateStr);
+          const idx = rec.symptoms.indexOf(symp);
+          if (idx >= 0) rec.symptoms.splice(idx, 1);
+          else rec.symptoms.push(symp);
+          saveState(true);
+          renderScheduleTab();
+        });
+
+        document.getElementById('dailyNotes').addEventListener('input', (e) => {
+          getDayRecord(currentDateStr).dailyNotes = e.target.value;
+          saveState(true);
+        });
+
+        document.getElementById('chartMetricButtons').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-metric]');
+          if (!btn) return;
+          chartMetric = btn.dataset.metric;
+          renderTrendChart();
+        });
+
+        document.getElementById('chartRangeButtons').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-range]');
+          if (!btn) return;
+          chartRange = Number(btn.dataset.range);
+          renderTrendChart();
+        });
+
+        ['bodyCompFieldsContainer', 'bodyMeasureFieldsContainer'].forEach(cid => {
+          document.getElementById(cid).addEventListener('change', (e) => {
+            const inp = e.target.closest('[data-body-field]');
+            if (!inp) return;
+            const rec = getDayRecord(currentDateStr);
+            rec.body[inp.dataset.bodyField] = inp.value;
+            saveState(true);
+            renderBodyTab();
+          });
+        });
+
+        document.getElementById('btnCopyLastBody').addEventListener('click', () => {
+          const sortedDates = Object.keys(appState.days).filter(d => d < currentDateStr).sort().reverse();
+          let lastBody = null;
+          for (const d of sortedDates) {
+            if (appState.days[d].body && Object.keys(appState.days[d].body).some(k => appState.days[d].body[k] !== '')) {
+              lastBody = appState.days[d].body;
+              break;
+            }
+          }
+          if (!lastBody) {
+            showAlert('找不到先前已填寫的體態紀錄。');
+            return;
+          }
+          const rec = getDayRecord(currentDateStr);
+          rec.body = { ...lastBody, ...Object.fromEntries(Object.entries(rec.body).filter(([, v]) => v !== '')) };
+          saveState(true);
+          renderBodyTab();
+          triggerSaveToast('已帶入上次數值');
+        });
+
+        document.getElementById('btnOpenGoalsModal').addEventListener('click', openGoalsModal);
+        document.getElementById('btnCloseGoals').addEventListener('click', () => {
+          document.getElementById('goalsModal').classList.remove('open');
+        });
+        document.getElementById('btnSaveGoals').addEventListener('click', () => {
+          document.querySelectorAll('#goalsFormContainer [data-goal-key]').forEach(inp => {
+            const k = inp.dataset.goalKey;
+            if (inp.value.trim() === '') delete appState.goals[k];
+            else appState.goals[k] = inp.value.trim();
+          });
+          saveState(true);
+          document.getElementById('goalsModal').classList.remove('open');
+          renderBodyTab();
+        });
+
+        document.getElementById('subTabDietPhoto').addEventListener('click', () => {
+          photoSubTab = 'diet';
+          renderPhotosTab();
+        });
+        document.getElementById('subTabBodyPhoto').addEventListener('click', () => {
+          photoSubTab = 'body';
+          renderPhotosTab();
+        });
+        document.getElementById('btnPhotoScopeDay').addEventListener('click', () => {
+          photoScope = 'day';
+          renderPhotosTab();
+        });
+        document.getElementById('btnPhotoScopeAll').addEventListener('click', () => {
+          photoScope = 'all';
+          renderPhotosTab();
+        });
+
+        document.getElementById('btnTakePhoto').addEventListener('click', () => {
+          document.getElementById('inputCameraPhoto').click();
+        });
+        document.getElementById('btnPickGallery').addEventListener('click', () => {
+          document.getElementById('inputGalleryPhoto').click();
+        });
+
+        async function handlePhotoFileInput(e) {
+          const file = e.target.files && e.target.files[0];
+          e.target.value = '';
+          if (!file) return;
+          try {
+            const dataUrl = await compressImageFile(file);
+            const rec = getDayRecord(currentDateStr);
+            const photoObj = {
+              id: 'ph-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+              date: currentDateStr,
+              type: photoSubTab,
+              tag: document.getElementById('photoTagSelect').value,
+              time: document.getElementById('photoTimeInput').value || '',
+              note: document.getElementById('photoNoteInput').value.trim(),
+              weight: rec.body.weight || '',
+              dataUrl,
+              createdAt: Date.now()
+            };
+            await idbAddPhoto(photoObj);
+            document.getElementById('photoNoteInput').value = '';
+            triggerSaveToast('照片已壓縮儲存');
+            await renderPhotosTab();
+          } catch (err) {
+            showAlert('照片處理失敗，請換一張圖片再試。');
+          }
+        }
+        document.getElementById('inputCameraPhoto').addEventListener('change', handlePhotoFileInput);
+        document.getElementById('inputGalleryPhoto').addEventListener('change', handlePhotoFileInput);
+
+        document.getElementById('compareSelectA').addEventListener('change', () => {
+          updateComparePreview(allPhotosCache.filter(p => p.type === 'body'));
+        });
+        document.getElementById('compareSelectB').addEventListener('change', () => {
+          updateComparePreview(allPhotosCache.filter(p => p.type === 'body'));
+        });
+
+        document.getElementById('photoGridContainer').addEventListener('click', (e) => {
+          const card = e.target.closest('[data-open-photo]');
+          if (!card) return;
+          const p = allPhotosCache.find(item => item.id === card.dataset.openPhoto);
+          if (!p) return;
+          currentLightboxPhotoId = p.id;
+          document.getElementById('lightboxTitle').textContent = `${p.date} ${p.time || ''} · ${p.tag}`;
+          document.getElementById('lightboxImg').src = p.dataUrl;
+          document.getElementById('lightboxCaption').textContent = (p.weight && p.type === 'body' ? `體重：${p.weight} kg｜` : '') + (p.note || '無備註');
+          document.getElementById('photoLightboxModal').classList.add('open');
+        });
+
+        document.getElementById('btnCloseLightbox').addEventListener('click', () => {
+          document.getElementById('photoLightboxModal').classList.remove('open');
+        });
+        document.getElementById('btnDeleteLightboxPhoto').addEventListener('click', () => {
+          if (!currentLightboxPhotoId) return;
+          showConfirm('確定要刪除這張照片嗎？刪除後無法復原。', async () => {
+            await idbDeletePhoto(currentLightboxPhotoId);
+            document.getElementById('photoLightboxModal').classList.remove('open');
+            triggerSaveToast('已刪除照片');
+            await renderPhotosTab();
+          });
+        });
+
+        document.getElementById('accountsCardsContainer').addEventListener('click', (e) => {
+          const card = e.target.closest('[data-filter-acc]');
+          if (!card) return;
+          accountFilterId = accountFilterId === card.dataset.filterAcc ? '' : card.dataset.filterAcc;
+          renderMoneyTab();
+        });
+        document.getElementById('btnClearAccountFilter').addEventListener('click', () => {
+          accountFilterId = '';
+          renderMoneyTab();
+        });
+
+        document.getElementById('txTypeExpenseBtn').addEventListener('click', () => {
+          txFormType = 'expense';
+          renderMoneyTab();
+        });
+        document.getElementById('txTypeIncomeBtn').addEventListener('click', () => {
+          txFormType = 'income';
+          renderMoneyTab();
+        });
+
+        document.getElementById('btnAddTx').addEventListener('click', () => {
+          const title = document.getElementById('txTitleInput').value.trim();
+          const amount = Number(document.getElementById('txAmountInput').value);
+          if (!title || !amount || amount <= 0) {
+            showAlert('請輸入項目名稱與大於 0 的金額！');
+            return;
+          }
+          const rec = getDayRecord(currentDateStr);
+          rec.transactions.unshift({
+            id: 'tx-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5),
+            title,
+            amount,
+            type: txFormType,
+            category: document.getElementById('txCategorySelect').value,
+            accountId: document.getElementById('txAccountSelect').value
+          });
+          document.getElementById('txTitleInput').value = '';
+          document.getElementById('txAmountInput').value = '';
+          saveState(true);
+          renderMoneyTab();
+        });
+
+        document.getElementById('quickButtonsContainer').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-use-qb]');
+          if (!btn) return;
+          const qb = appState.quickButtons.find(q => q.id === btn.dataset.useQb);
+          if (!qb) return;
+          const rec = getDayRecord(currentDateStr);
+          rec.transactions.unshift({
+            id: 'tx-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5),
+            title: qb.name,
+            amount: Number(qb.amount) || 0,
+            type: qb.type,
+            category: qb.category,
+            accountId: qb.accountId
+          });
+          saveState(true);
+          renderMoneyTab();
+          triggerSaveToast(`已記一筆：${qb.name}`);
+        });
+
+        document.getElementById('txListContainer').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-del-tx]');
+          if (!btn) return;
+          const rec = getDayRecord(currentDateStr);
+          rec.transactions = rec.transactions.filter(t => t.id !== btn.dataset.delTx);
+          saveState(true);
+          renderMoneyTab();
+        });
+
+        document.getElementById('btnOpenAccountsModal').addEventListener('click', () => {
+          document.getElementById('editAccountId').value = '';
+          document.getElementById('accountFormHeading').textContent = '新增帳戶';
+          document.getElementById('accNameInput').value = '';
+          document.getElementById('accInitialInput').value = '';
+          renderAccountsManageList();
+          document.getElementById('accountsModal').classList.add('open');
+        });
+        document.getElementById('btnCloseAccounts').addEventListener('click', () => {
+          document.getElementById('accountsModal').classList.remove('open');
+          renderMoneyTab();
+        });
+        document.getElementById('btnSaveAccount').addEventListener('click', () => {
+          const name = document.getElementById('accNameInput').value.trim();
+          const type = document.getElementById('accTypeSelect').value;
+          const initialBalance = Number(document.getElementById('accInitialInput').value) || 0;
+          if (!name) {
+            showAlert('請輸入帳戶名稱！');
+            return;
+          }
+          const editId = document.getElementById('editAccountId').value;
+          if (editId) {
+            const acc = appState.accounts.find(a => a.id === editId);
+            if (acc) {
+              acc.name = name;
+              acc.type = type;
+              acc.initialBalance = initialBalance;
+            }
+          } else {
+            appState.accounts.push({ id: 'acc-' + Date.now(), name, type, initialBalance });
+          }
+          document.getElementById('editAccountId').value = '';
+          document.getElementById('accountFormHeading').textContent = '新增帳戶';
+          document.getElementById('accNameInput').value = '';
+          document.getElementById('accInitialInput').value = '';
+          saveState(true);
+          renderAccountsManageList();
+          renderMoneyTab();
+        });
+
+        document.getElementById('accountsManageList').addEventListener('click', (e) => {
+          const editBtn = e.target.closest('[data-edit-acc]');
+          if (editBtn) {
+            const acc = appState.accounts.find(a => a.id === editBtn.dataset.editAcc);
+            if (!acc) return;
+            document.getElementById('editAccountId').value = acc.id;
+            document.getElementById('accountFormHeading').textContent = `編輯帳戶：${acc.name}`;
+            document.getElementById('accNameInput').value = acc.name;
+            document.getElementById('accTypeSelect').value = acc.type;
+            document.getElementById('accInitialInput').value = acc.initialBalance;
+            return;
+          }
+          const delBtn = e.target.closest('[data-del-acc]');
+          if (delBtn) {
+            if (appState.accounts.length <= 1) {
+              showAlert('至少需要保留 1 個帳戶喔！');
+              return;
+            }
+            const id = delBtn.dataset.delAcc;
+            showConfirm('確定要刪除此帳戶嗎？（已紀錄的明細仍會保留）', () => {
+              appState.accounts = appState.accounts.filter(a => a.id !== id);
+              if (accountFilterId === id) accountFilterId = '';
+              saveState(true);
+              renderAccountsManageList();
+              renderMoneyTab();
+            });
+          }
+        });
+
+        document.getElementById('btnOpenQuickBtnsModal').addEventListener('click', () => {
+          document.getElementById('editQuickBtnId').value = '';
+          document.getElementById('quickBtnFormHeading').textContent = '新增常用按鈕';
+          document.getElementById('qbNameInput').value = '';
+          document.getElementById('qbAmountInput').value = '';
+          populateQuickBtnModalSelects();
+          renderQuickBtnsManageList();
+          document.getElementById('quickBtnsModal').classList.add('open');
+        });
+        document.getElementById('btnCloseQuickBtns').addEventListener('click', () => {
+          document.getElementById('quickBtnsModal').classList.remove('open');
+          renderMoneyTab();
+        });
+        document.getElementById('qbTypeSelect').addEventListener('change', populateQuickBtnModalSelects);
+
+        document.getElementById('btnSaveQuickBtn').addEventListener('click', () => {
+          const name = document.getElementById('qbNameInput').value.trim();
+          const amount = Number(document.getElementById('qbAmountInput').value);
+          const type = document.getElementById('qbTypeSelect').value;
+          const category = document.getElementById('qbCategorySelect').value;
+          const accountId = document.getElementById('qbAccountSelect').value;
+          if (!name || !amount || amount <= 0) {
+            showAlert('請輸入按鈕名稱與大於 0 的金額！');
+            return;
+          }
+          const editId = document.getElementById('editQuickBtnId').value;
+          if (editId) {
+            const qb = appState.quickButtons.find(q => q.id === editId);
+            if (qb) Object.assign(qb, { name, amount, type, category, accountId });
+          } else {
+            appState.quickButtons.push({ id: 'qb-' + Date.now(), name, amount, type, category, accountId });
+          }
+          document.getElementById('editQuickBtnId').value = '';
+          document.getElementById('quickBtnFormHeading').textContent = '新增常用按鈕';
+          document.getElementById('qbNameInput').value = '';
+          document.getElementById('qbAmountInput').value = '';
+          saveState(true);
+          renderQuickBtnsManageList();
+          renderMoneyTab();
+        });
+
+        document.getElementById('quickBtnsManageList').addEventListener('click', (e) => {
+          const editBtn = e.target.closest('[data-edit-qb]');
+          if (editBtn) {
+            const qb = appState.quickButtons.find(q => q.id === editBtn.dataset.editQb);
+            if (!qb) return;
+            document.getElementById('editQuickBtnId').value = qb.id;
+            document.getElementById('quickBtnFormHeading').textContent = `編輯按鈕：${qb.name}`;
+            document.getElementById('qbNameInput').value = qb.name;
+            document.getElementById('qbAmountInput').value = qb.amount;
+            document.getElementById('qbTypeSelect').value = qb.type;
+            populateQuickBtnModalSelects();
+            document.getElementById('qbCategorySelect').value = qb.category;
+            document.getElementById('qbAccountSelect').value = qb.accountId;
+            return;
+          }
+          const delBtn = e.target.closest('[data-del-qb]');
+          if (delBtn) {
+            appState.quickButtons = appState.quickButtons.filter(q => q.id !== delBtn.dataset.delQb);
+            saveState(true);
+            renderQuickBtnsManageList();
+            renderMoneyTab();
+          }
+        });
+
+        document.getElementById('weekDaysContainer').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-jump-date]');
+          if (!btn) return;
+          currentDateStr = btn.dataset.jumpDate;
+          switchTab('schedule');
+          triggerDateBounce();
+        });
+
+        document.getElementById('btnLoadDemoData').addEventListener('click', loadDemoData);
+
+        document.getElementById('btnExportJson').addEventListener('click', async () => {
+          const includePhotos = document.getElementById('exportIncludePhotos').checked;
+          const payload = {
+            version: 2,
+            exportedAt: new Date().toISOString(),
+            state: appState
+          };
+          if (includePhotos) {
+            payload.photos = await idbGetAllPhotos();
+          }
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `健康電子日帳備份_${currentDateStr}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          triggerSaveToast('已匯出備份檔');
+        });
+
+        document.getElementById('btnImportJson').addEventListener('click', () => {
+          document.getElementById('importFileInput').click();
+        });
+
+        document.getElementById('importFileInput').addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          e.target.value = '';
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = async (ev) => {
+            try {
+              const parsed = JSON.parse(ev.target.result);
+              const nextState = parsed.state || parsed;
+              if (!nextState || typeof nextState.days !== 'object') {
+                throw new Error('格式不符');
+              }
+              appState = {
+                ...getDefaultState(),
+                ...nextState
+              };
+              saveState(false);
+              if (Array.isArray(parsed.photos)) {
+                for (const p of parsed.photos) {
+                  await idbAddPhoto(p);
+                }
+              }
+              renderAll(true);
+              showAlert('備份檔案已成功匯入還原！');
+            } catch (err) {
+              showAlert('匯入失敗，請確認檔案為正確的健康電子日帳 JSON 備份檔。');
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('btnResetAllData').addEventListener('click', () => {
+          showConfirm('確定要清除全部日帳紀錄、體態數據、帳本與照片嗎？建議先匯出備份再執行。', async () => {
+            appState = getDefaultState();
+            localStorage.removeItem(STORAGE_KEY);
+            await idbClearAllPhotos();
+            saveState(false);
+            renderAll(true);
+            showAlert('已重置為全新空白日帳。');
+          });
+        });
+
+        document.querySelectorAll('.modal-backdrop').forEach(modal => {
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal && modal.id !== 'dialogModal') {
+              modal.classList.remove('open');
+            }
+          });
+        });
+      }
+
+      // 啟動初始化
+      setupHomeScreenAppMeta();
+      bindEvents();
+      renderAll(false);
+    })();
+  </script>
+</body>
+</html>
